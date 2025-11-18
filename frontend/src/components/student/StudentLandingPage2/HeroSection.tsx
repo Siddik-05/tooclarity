@@ -66,7 +66,7 @@ export default function HeroSection() {
                         Find The Best Kindergarten For Your Little One Near You
                       </p>
                       <a
-                        href="#"
+                        href="/student/signup"
                         className="inline-flex items-center text-blue-600 font-medium hover:text-blue-700 transition-colors text-[10px] leading-none mt-[2px]"
                       >
                         Explore <span className="ml-1">→</span>
@@ -96,7 +96,7 @@ export default function HeroSection() {
                         Explore Verified Colleges For UG/PG Programs
                       </p>
                       <a
-                        href="#"
+                        href="/student/signup"
                         className="inline-flex items-center text-blue-600 font-medium hover:text-blue-700 transition-colors text-[10px] leading-none mt-[2px]"
                       >
                         Explore <span className="ml-1">→</span>
@@ -131,7 +131,7 @@ export default function HeroSection() {
 
                   {/* Explore Link */}
                   <a
-                    href="#"
+                    href="/student/signup"
                     className="inline-flex items-center text-blue-600 font-medium hover:text-blue-700 transition-colors text-[11px]"
                   >
                     Explore
@@ -163,7 +163,7 @@ export default function HeroSection() {
                         Can Help You Score Better!
                       </p>
                       <a
-                        href="#"
+                        href="/student/signup"
                         className="flex leading-none items-center text-blue-600 font-medium hover:text-blue-700 transition-colors text-[11px]"
                       >
                         Explore <span>→</span>
@@ -190,7 +190,7 @@ export default function HeroSection() {
                         Choose The Right Intermediate College For Your Stream
                       </p>
                       <a
-                        href="#"
+                        href="/student/signup"
                         className="flex items-center text-blue-600 font-medium hover:text-blue-700 transition-colors text-[11px]"
                       >
                         Explore <span>→</span>
@@ -219,7 +219,7 @@ export default function HeroSection() {
                       Courses From Top Institutes!
                     </p>
                     <a
-                      href="#"
+                      href="/student/signup"
                       className="flex leading-none items-center text-blue-600 font-medium hover:text-blue-700 transition-colors text-[11px]"
                     >
                       Explore <span>→</span>
@@ -249,7 +249,7 @@ export default function HeroSection() {
                         Exams? Find The Best Coaching Now
                       </p>
                       <a
-                        href="#"
+                        href="/student/signup"
                         className="flex leading-none items-center text-blue-600 font-medium hover:text-blue-700 transition-colors text-[11px]"
                       >
                         Explore <span>→</span>
@@ -276,7 +276,7 @@ export default function HeroSection() {
                         More Verified Colleges For UG/PG Program
                       </p>
                       <a
-                        href="#"
+                        href="/student/signup"
                         className="flex leading-none items-center text-blue-600 font-medium hover:text-blue-700 transition-colors text-[11px]"
                       >
                         Explore <span>→</span>
@@ -310,7 +310,7 @@ export default function HeroSection() {
           <p className="text-gray-600 text-sm leading-snug">
             Find The Best Kindergarten For Your Little One Near You
           </p>
-          <a href="#" className="inline-flex items-center text-blue-700 font-medium hover:text-blue-800 text-sm mt-2">
+          <a href="/student/signup" className="inline-flex items-center text-blue-700 font-medium hover:text-blue-800 text-sm mt-2">
             Explore Options Now! →
           </a>
         </div>
@@ -327,7 +327,7 @@ export default function HeroSection() {
           <p className="text-[#000000] text-[16px] leading-snug">
             Discover Top-Rated Schools That Shape Your Child&apos;s Future
           </p>
-          <a href="#" className="inline-flex items-center text-blue-700 font-medium hover:text-blue-800 text-xs mt-2">
+          <a href="/student/signup" className="inline-flex items-center text-blue-700 font-medium hover:text-blue-800 text-xs mt-2">
             Compare And Choose Wisely! →
           </a>
         </div>
@@ -347,7 +347,7 @@ export default function HeroSection() {
           <p className="text-gray-600 text-sm leading-snug">
             Struggling With Studies? Find Expert Tutors Nearby Who Can Help You Score Better!
           </p>
-          <a href="#" className="inline-flex items-center text-blue-700 font-medium hover:text-blue-800 text-sm mt-2">
+          <a href="/student/signup" className="inline-flex items-center text-blue-700 font-medium hover:text-blue-800 text-sm mt-2">
             Start Exploring →
           </a>
         </div>
@@ -366,7 +366,7 @@ export default function HeroSection() {
             <p className="text-gray-600 text-xs leading-snug">
               Choose The Right Intermediate College For Your Stream
             </p>
-            <a href="#" className="text-blue-700 font-medium hover:text-blue-800 text-xs mt-2 inline-block">
+            <a href="/student/signup" className="text-blue-700 font-medium hover:text-blue-800 text-xs mt-2 inline-block">
               Start Exploring →
             </a>
           </div>
@@ -384,7 +384,7 @@ export default function HeroSection() {
             <p className="text-gray-600 text-xs leading-snug">
               Explore Verified Colleges For UG/PG Programs
             </p>
-            <a href="#" className="text-blue-700 font-medium hover:text-blue-800 text-xs mt-2 inline-block">
+            <a href="/student/signup" className="text-blue-700 font-medium hover:text-blue-800 text-xs mt-2 inline-block">
               Start Exploring →
             </a>
           </div>
@@ -403,7 +403,7 @@ export default function HeroSection() {
           <p className="text-gray-600 text-sm leading-snug">
             Preparing for JEE, NEET, UPSC, Or Other Exams? Find The Best Coaching Now!
           </p>
-          <a href="#" className="inline-flex items-center text-blue-700 font-medium hover:text-blue-800 text-sm mt-2">
+          <a href="/student/signup" className="inline-flex items-center text-blue-700 font-medium hover:text-blue-800 text-sm mt-2">
             Start Exploring →
           </a>
         </div>
@@ -424,7 +424,7 @@ export default function HeroSection() {
           <p className="text-gray-600 text-sm leading-snug">
             Learn Job-Ready Skills And Boost Your Career With Trending Courses From Top Institutes!
           </p>
-          <a href="#" className="inline-flex items-center text-blue-700 font-medium hover:text-blue-800 text-sm mt-2">
+          <a href="/student/signup" className="inline-flex items-center text-blue-700 font-medium hover:text-blue-800 text-sm mt-2">
             Start Exploring →
           </a>
         </div>
@@ -442,7 +442,7 @@ export default function HeroSection() {
           <p className="text-gray-600 text-sm leading-snug">
             Lorem Ipsum Is Simply Dummy Text Of The Printing.
           </p>
-          <a href="#" className="inline-flex items-center text-blue-700 font-medium hover:text-blue-800 text-sm mt-2">
+          <a href="/student/signup" className="inline-flex items-center text-blue-700 font-medium hover:text-blue-800 text-sm mt-2">
             Start Exploring →
           </a>
         </div>

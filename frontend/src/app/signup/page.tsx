@@ -37,7 +37,7 @@ export default function SignupPage() {
   useEffect(() => {
     if (loading) return;
     if (!isAuthenticated) {
-      router.replace("/");
+      router.replace("/institute");
       return;
     }
 
@@ -57,7 +57,7 @@ export default function SignupPage() {
           return;
         }
       }
-      router.replace("/"); // Fallback
+      router.replace("/institute"); // Fallback
     }
   }, [loading, isAuthenticated, isAllowed, user, router]);
 

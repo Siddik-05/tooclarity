@@ -1,15 +1,246 @@
 "use client";
 
+import { toast } from 'react-toastify';
 import React from "react";
 import { useState } from 'react';
 import { useRouter } from "next/navigation";
 import Image from 'next/image';
- 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  _Dialog,
+  _DialogTrigger,
+  _DialogContent,
+  _DialogHeader,
+  _DialogTitle,
+  _DialogFooter,
+  _DialogClose,
+  _DialogPortal,
+  _DialogOverlay
+} from "@/components/ui/dialog";
+import Joi from "joi";
+import { nameRule, phoneRule } from "@/lib/validations/ValidationRules";
+
+// export function RequestToCallback() {
+export function RequestToCallback({ open, setOpen }: { open: boolean; setOpen: (v: boolean) => void }) {
+  //  
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    serviceType: "",
+    query: "",
+  });
+  const [errors, setErrors] = useState<Record<string, string | undefined>>({});
+
+  // ✅ Schema
+  const callbackSchema = Joi.object({
+    name: nameRule,
+    phone: phoneRule,
+    serviceType: Joi.string().required().messages({
+      "string.empty": "Please select a service type",
+      "any.required": "Service type is required",
+    }),
+    query: Joi.string().allow("").max(300).messages({
+      "string.max": "Query cannot exceed 300 characters",
+    }),
+  });
+
+  type FieldValue = string | undefined;
+
+  const validateField = (key: string, value: FieldValue) => {
+    const fieldSchema = callbackSchema.extract(key);
+    const { error } = fieldSchema.validate(value);
+    setErrors((prev) => ({
+      ...prev,
+      [key]: error ? error.details[0].message : undefined,
+    }));
+  };
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { id, value } = e.target;
+    setFormData({ ...formData, [id]: value });
+    validateField(id, value);
+  };
+
+
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  // ✅ Validate input
+  const { error } = callbackSchema.validate(formData, { abortEarly: false });
+  if (error) {
+    const validationErrors: Record<string, string> = {};
+    error.details.forEach((detail) => {
+      validationErrors[detail.context?.key || ""] = detail.message;
+    });
+    setErrors(validationErrors);
+    return;
+  }
+
+  setErrors({}); // clear previous errors
+
+  try {
+    // ✅ Prepare data for Web3Forms
+    const formDataToSend = {
+      access_key: process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY,
+      subject: "New Callback Request - TOOCLARITY",
+      name: formData.name,
+      phone: formData.phone,
+      serviceType: formData.serviceType,
+      query: formData.query || "No query provided",
+    };
+
+    const response = await fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(formDataToSend),
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      toast.success("✅ Your callback request has been submitted!");
+      setFormData({ name: "", phone: "", serviceType: "", query: "" });
+      setOpen(false); // Close the dialog
+    } else {
+      toast.error("❌ Something went wrong. Please try again.");
+    }
+  } catch (err) {
+    console.error("Error submitting form:", err);
+    toast.error("⚠️ An error occurred while sending your request.");
+  }
+};
+
+
+  return (
+    <div className="bg-blur flex justify-center"> 
+      <_Dialog open={open} onOpenChange={setOpen}>
+        {/* Trigger Button */}
+        <_DialogTrigger asChild>
+          <Button
+            className="bg-blue-700 hover:bg-blue-800 text-white px-6 py-3 rounded-xl"
+          >
+            Request a Callback
+          </Button>
+        </_DialogTrigger>
+          <_DialogPortal>
+    <_DialogOverlay className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
+
+
+        {/* Dialog Content */}
+        <_DialogContent className="backdrop-blur-md bg-white/90 max-w-md rounded-2xl shadow-2xl border border-gray-200">
+          <_DialogHeader>
+            <_DialogTitle className="text-2xl font-semibold text-center text-black">
+              Request a Callback
+            </_DialogTitle>
+          </_DialogHeader>
+
+          <form onSubmit={handleSubmit} className="space-y-5 mt-4">
+            {/* Name */}
+            <div>
+              <Label htmlFor="name">Your Name *</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Enter your name"
+                className="border-gray-400"
+              />
+              {errors.name && (
+                <p className="text-red-600 text-sm mt-1">{errors.name}</p>
+              )}
+            </div>
+
+            {/* Phone */}
+            <div>
+              <Label htmlFor="phone">Mobile Number *</Label>
+              <Input
+                id="phone"
+                type="tel"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="Enter your mobile number"
+                className="border-gray-400"
+              />
+              {errors.phone && (
+                <p className="text-red-600 text-sm mt-1">{errors.phone}</p>
+              )}
+            </div>
+
+            {/* Service Type */}
+            <div>
+              <Label htmlFor="serviceType">Service Type *</Label>
+              <select
+                id="serviceType"
+                value={formData.serviceType}
+                onChange={handleChange}
+                className="w-full border border-gray-400 rounded-md px-3 py-2 text-black"
+              >
+                <option value="">Select an option</option>
+                <option>Kindergarten / Play School</option>
+                <option>School</option>
+                <option>Tuition Center</option>
+                <option>College / University</option>
+                <option>Coaching Center</option>
+                <option>Upskilling / Training</option>
+                <option>Study Abroad / Consultancy</option>
+              </select>
+              {errors.serviceType && (
+                <p className="text-red-600 text-sm mt-1">{errors.serviceType}</p>
+              )}
+            </div>
+
+            {/* Query */}
+            <div>
+              <Label htmlFor="query">Any Queries?</Label>
+              <Textarea
+                id="query"
+                value={formData.query}
+                onChange={handleChange}
+                placeholder="Write your query (optional)"
+                className="border-gray-400"
+              />
+              {errors.query && (
+                <p className="text-red-600 text-sm mt-1">{errors.query}</p>
+              )}
+            </div>
+
+            {/* Buttons */}
+            <_DialogFooter className="flex justify-between items-center pt-3">
+              <_DialogClose asChild>
+                <Button variant="outline" className="border-gray-400">
+                  Cancel
+                </Button>
+              </_DialogClose>
+
+              <Button
+                type="submit"
+                className="bg-blue-700 hover:bg-blue-800 text-white"
+              >
+                Submit
+              </Button>
+            </_DialogFooter>
+          </form>
+        </_DialogContent>
+        </_DialogPortal>
+      </_Dialog>
+    </div>
+  );
+}
 
 
 
 export function CardsCarousel() {
   const [isPaused, setIsPaused] = useState(false);
+
 
   const cards = [
     {
@@ -118,6 +349,7 @@ export function CardsCarousel() {
 
 export default function CTASection() {
   const router = useRouter();
+  const [open, setOpen] = useState(false);
   return (
     <section className="w-full px-6 sm:px-12 lg:px-24 py-16 bg-white text-gray-900">
       {/* Title Section */}
@@ -223,7 +455,7 @@ export default function CTASection() {
 </div>
 
         {/* ---------------------- CARD 4 (CTA) ---------------------- */}
-        <div className="relative flex flex-col items-center justify-center text-center    px-6 py-10 w-[260px] sm:w-[280px] md:w-[300px] h-[320px]  text-white hover:scale-105 transition-transform duration-300 mb-4 flex-shrink-0">
+        <div className="relative flex flex-col items-center justify-center text-center    px-6 py-10 w-[260px] sm:w-[280px] md:w-[300px] h-[320px]  text-white mb-4 ">
     
           <div className="mb-5">
             <svg width="216" height="209" viewBox="0 0 216 209" fill="none" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink">
@@ -236,11 +468,16 @@ export default function CTASection() {
             </defs>
             </svg>
             </div>
-        {/* 👉 SVG Placeholder (Card 4) */}
-            {/* ⬇️ PLACE YOUR SVG IMAGE HERE (CARD 4) */}
-          <button className="bg-blue-800 cursor-pointer text-white w-full py-2 rounded-lg font-semibold text-base sm:text-lg ">
-            Request A Callback
-          </button>
+
+          <button
+        onClick={() => setOpen(true)}
+        className="bg-blue-800 cursor-pointer text-white w-full py-2 rounded-lg font-semibold text-base sm:text-lg"
+      >
+        Request A Callback
+      </button>
+
+      {/* Render the modal only when open */}
+      {open && <RequestToCallback open={open} setOpen={setOpen} />}
         </div>
       </div>
 

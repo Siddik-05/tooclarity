@@ -67,7 +67,7 @@ export default function Header() {
                 href="mailto:info@tooclarity.com"
                 className="md:text-[16px] text-[8px] hover:underline whitespace-nowrap"
               >
-                toocalrity0@gmail.com
+                tooclarity0@gmail.com
               </a>
             </div>
           </div>

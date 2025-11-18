@@ -35,7 +35,7 @@ export default function DashboardLayout({
     // 🏫 Institute flow
     if (user.role === "INSTITUTE_ADMIN") {
       if (!user.isPaymentDone && !user.isProfileCompleted) {
-        router.push("/");
+        router.push("/institute");
       } else if (!user.isPaymentDone && user.isProfileCompleted) {
         router.push("/payment");
       }

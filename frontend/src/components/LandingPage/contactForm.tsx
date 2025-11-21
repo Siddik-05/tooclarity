@@ -38,7 +38,7 @@ export function TimePicker({
         .padStart(2, "0")} ${ampm}`;
       onChange(formatted);
     }
-  }, [hour, minute, ampm,onChange]);
+  }, [hour, minute, ampm]);
 
   const handleSelect = () => {
     if (hour !== null && minute !== null) {
@@ -129,7 +129,8 @@ export default function ContactForm() {
     location: "",
     categories: [] as string[],
     date: undefined as Date | undefined,
-    time: "",
+
+    time: "" ,
     query: "",
   });
 
@@ -164,6 +165,7 @@ export default function ContactForm() {
     date: Joi.date().required().messages({
       "any.required": "Please select a date",
     }),
+
     time: Joi.string().required().messages({
       "string.empty": "Please select a time",
     }),
@@ -200,29 +202,68 @@ export default function ContactForm() {
     validateField("categories", updated);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    const { error } = scheduleDemoSchema.validate(formData, { abortEarly: false });
-    const validationErrors: Record<string, string | undefined> = {};
+  const { error } = scheduleDemoSchema.validate(formData, { abortEarly: false });
+  const validationErrors: Record<string, string | undefined> = {};
 
-    if (error) {
-      error.details.forEach((detail) => {
-        validationErrors[detail.context?.key || ""] = detail.message;
+  if (error) {
+    error.details.forEach((detail) => {
+      validationErrors[detail.context?.key || ""] = detail.message;
+    });
+    setErrors(validationErrors);
+    console.log(validationErrors);
+    console.log(formData);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  } else {
+    setErrors({});
+
+    try {
+      const formDataToSend = {
+        access_key: process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY, // 🔹 Replace with your Web3Forms key
+        subject: "New Demo Request - TOOCLARITY",
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+        institute: formData.institute,
+        location: formData.location,
+        categories: formData.categories.join(", "),
+        date: formData.date ? format(formData.date, "PPP") : "",
+        time: formData.time || "No time provided",
+        query: formData.query || "No query provided",
+      };
+
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(formDataToSend),
       });
-      setErrors(validationErrors);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } else {
-      setErrors({});
-      router.push("/contactUs/thank-you");
+
+      const result = await response.json();
+
+      if (result.success) {
+        // ✅ Success — redirect or show message
+        router.push("/contactUs/thank-you");
+      } else {
+        alert("Something went wrong while sending your message. Please try again.");
+      }
+    } catch (err) {
+      console.error("Error submitting form:", err);
+      alert("An error occurred. Please try again later.");
     }
-  };
+  }
+};
 
   return (
     <section className="flex flex-col justify-center px-4 py-12">
       <div className="mb-6 flex justify-center">
 
-        <svg width="180" height="180" viewBox="0 0 69 69" fill="none" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink">
+     {/* //svg */}
+       <svg width="180" height="180" viewBox="0 0 69 69" fill="none" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink">
 <rect width="69" height="69" fill="url(#pattern0_991_2449)"/>
 <defs>
 <pattern id="pattern0_991_2449" patternContentUnits="objectBoundingBox" width="1" height="1">
@@ -232,13 +273,7 @@ export default function ContactForm() {
 </defs>
 </svg>
 
-        {/* <img
-          src="/logo.png"
-          alt="TooClarity Logo"
-          width={150}
-          height={50}
-          className="mx-auto"
-        /> */}
+       
       </div>
 
       <h1 className="text-4xl sm:text-5xl font-bold text-black mb-4 text-center">
@@ -423,6 +458,7 @@ export default function ContactForm() {
         </div>
 
         <Button
+          onClick={handleSubmit}
           type="submit"
           className="bg-black text-white w-full h-12 text-lg rounded-xl"
         >
@@ -432,3 +468,6 @@ export default function ContactForm() {
     </section>
   );
 }
+
+
+ 

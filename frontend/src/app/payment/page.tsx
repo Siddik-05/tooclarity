@@ -48,7 +48,7 @@ export default function PaymentPage() {
     if (loading) return;
 
     if (!isAuthenticated || !isAllowed) {
-      router.replace("/");
+      router.replace("/institute");
     }
   }, [loading, isAuthenticated, isAllowed, router]);
 

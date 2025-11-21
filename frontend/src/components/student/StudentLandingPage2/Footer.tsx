@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useCallback, memo } from "react";
-import { Mail, Phone, MapPin, ChevronDown } from "lucide-react";
 import Link from "next/link";
+import { MapPin, ChevronDown,Phone, Mail, Instagram, Linkedin, Twitter } from "lucide-react";
 
 // Constants for routes - centralized for easy maintenance/SEO
 const FOOTER_ROUTES = {
@@ -29,20 +29,20 @@ const FOOTER_ROUTES = {
   ],
   company: [
     { label: "About Us", href: "/student/AboutUs", prefetch: true },
-    { label: "Careers", href: "/careers", prefetch: false }, // Less critical, no prefetch
+    { label: "Careers", href: "student/Careers", prefetch: false }, // Less critical, no prefetch
     { label: "Privacy Policy", href: "/PrivacyPolicy", prefetch: false },
     { label: "Terms of Service", href: "/TermsConditions", prefetch: false },
   ],
   resources: [
     { label: "Blog", href: "/student/blogs", prefetch: true },
-    { label: "Webinars", href: "/webinars", prefetch: false },
-    { label: "Student Stories", href: "/student-stories", prefetch: true },
+    { label: "Webinars", href: "student/webinars", prefetch: false },
+    { label: "Student Stories", href: "student/student-stories", prefetch: true },
     {
       label: "Become A Campus Leader",
-      href: "/campus-leader",
+      href: "student/campus-leader",
       prefetch: false,
     },
-    { label: "Scholarships", href: "/scholarships", prefetch: true },
+    { label: "Scholarships", href: "student/scholarships", prefetch: true },
   ],
 } as const;
 
@@ -135,6 +135,7 @@ export default function Footer() {
     resources: false,
     contact: false,
   });
+   const [showTopHeader, setShowTopHeader] = useState(true);
 
   const toggleSection = useCallback((key: keyof typeof openSections) => {
     setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -166,6 +167,7 @@ export default function Footer() {
       isContact: true,
     },
   ] as const;
+
 
   return (
     <>
@@ -224,8 +226,69 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Footer Bottom - Full-width, accessible copyright */}
+        {/* ===== Top Blue Header (Info Bar) ===== */}
+      {/* ===== Top Blue Header (Info Bar) ===== */}
+<header
+  className="w-full bg-[#0222D7] text-white text-sm py-2 mt-10"
+>
+  <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between px-4 sm:px-6">
+    {/* Left Section - Logo + Contact Info */}
+    <div className="flex items-center gap-6 sm:gap-12 flex-wrap">
+      {/* Phone */}
+      <div className="flex items-center gap-3">
+        <Phone className="md:w-4 w-2 h-4 text-white" />
+        <a
+          href="tel:+911234567890"
+          className="md:text-[16px] text-[8px] hover:underline whitespace-nowrap"
+        >
+          +91 93911 60205
+        </a>
+      </div>
+
+      {/* Email */}
+      <div className="flex items-center gap-2">
+        <Mail className="md:w-4 w-2 h-4 text-white" />
+        <a
+          href="mailto:info@tooclarity.com"
+          className="md:text-[16px] text-[8px] hover:underline whitespace-nowrap"
+        >
+          toocalrity0@gmail.com
+        </a>
+      </div>
+    </div>
+
+    {/* Right Section - Social Links */}
+    <div className="flex items-center gap-4 mt-2 sm:mt-0">
+      <a
+        href="https://instagram.com/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="hover:text-gray-200"
+      >
+        <Instagram className="w-5 h-5" />
+      </a>
+      <a
+        href="https://twitter.com/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="hover:text-gray-200"
+      >
+        <Twitter className="w-5 h-5" />
+      </a>
+      <a
+        href="https://linkedin.com/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="hover:text-gray-200"
+      >
+        <Linkedin className="w-5 h-5" />
+      </a>
+    </div>
+  </div>
+</header>
+
       </footer>
+        {/* Footer Bottom - Full-width, accessible copyright */}
       <div className="bg-black flex flex-col sm:flex-row items-center justify-center text-center text-white text-sm py-4 border-t border-gray-700 w-full">
         <p className="flex items-center justify-center">
           &copy; Too Clarity 2025. All rights reserved.

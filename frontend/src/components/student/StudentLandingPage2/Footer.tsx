@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useCallback, memo } from "react";
-import { Mail, Phone, MapPin, ChevronDown } from "lucide-react";
 import Link from "next/link";
+import { MapPin, ChevronDown,Phone, Mail, Instagram, Linkedin, Twitter } from "lucide-react";
 
 // Constants for routes - centralized for easy maintenance/SEO
 const FOOTER_ROUTES = {
@@ -29,34 +29,34 @@ const FOOTER_ROUTES = {
   ],
   company: [
     { label: "About Us", href: "/student/AboutUs", prefetch: true },
-    { label: "Careers", href: "/careers", prefetch: false }, // Less critical, no prefetch
+    { label: "Careers", href: "student/Careers", prefetch: false }, // Less critical, no prefetch
     { label: "Privacy Policy", href: "/PrivacyPolicy", prefetch: false },
     { label: "Terms of Service", href: "/TermsConditions", prefetch: false },
   ],
   resources: [
     { label: "Blog", href: "/student/blogs", prefetch: true },
-    { label: "Webinars", href: "/webinars", prefetch: false },
-    { label: "Student Stories", href: "/student-stories", prefetch: true },
+    { label: "Webinars", href: "student/webinars", prefetch: false },
+    { label: "Student Stories", href: "student/student-stories", prefetch: true },
     {
       label: "Become A Campus Leader",
-      href: "/campus-leader",
+      href: "student/campus-leader",
       prefetch: false,
     },
-    { label: "Scholarships", href: "/scholarships", prefetch: true },
+    { label: "Scholarships", href: "student/scholarships", prefetch: true },
   ],
 } as const;
 
 const CONTACT_INFO = [
   {
-    icon: <Mail className="w-4 h-4 text-gray-700 flex-shrink-0" />,
+    icon: <Mail className="w-4 h-4 text-white flex-shrink-0" />,
     label: "tooclarity@gmail.com",
   },
   {
-    icon: <Phone className="w-4 h-4 text-gray-700 flex-shrink-0" />,
+    icon: <Phone className="w-4 h-4 text-white flex-shrink-0" />,
     label: "+91 88519 60009",
   },
   {
-    icon: <MapPin className="w-4 h-4 text-gray-700 mt-1 flex-shrink-0" />,
+    icon: <MapPin className="w-4 h-4 text-white mt-1 flex-shrink-0" />,
     label: "Tarnaka, Secunderbad, Hyderabad 500007",
   },
 ];
@@ -135,6 +135,7 @@ export default function Footer() {
     resources: false,
     contact: false,
   });
+   const [showTopHeader, setShowTopHeader] = useState(true);
 
   const toggleSection = useCallback((key: keyof typeof openSections) => {
     setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -167,10 +168,11 @@ export default function Footer() {
     },
   ] as const;
 
+
   return (
     <>
       <footer
-        className="bg-[#0222D7] overflow-y-hidden border-t py-8 sm:py-12 px-4 sm:px-6 lg:px-20"
+        className="bg-[#011481] overflow-y-hidden border-t py-8 sm:py-12 px-4 sm:px-6 lg:px-20"
         role="contentinfo"
       >
         <div className="max-w-7xl mx-auto flex flex-col items-center md:items-start">
@@ -224,8 +226,8 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Footer Bottom - Full-width, accessible copyright */}
       </footer>
+        {/* Footer Bottom - Full-width, accessible copyright */}
       <div className="bg-black flex flex-col sm:flex-row items-center justify-center text-center text-white text-sm py-4 border-t border-gray-700 w-full">
         <p className="flex items-center justify-center">
           &copy; Too Clarity 2025. All rights reserved.

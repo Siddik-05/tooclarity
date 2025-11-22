@@ -35,7 +35,7 @@ export default function DashboardLayout({
     // 🏫 Institute flow
     if (user.role === "INSTITUTE_ADMIN") {
       if (!user.isPaymentDone && !user.isProfileCompleted) {
-        router.push("/");
+        router.push("/institute");
       } else if (!user.isPaymentDone && user.isProfileCompleted) {
         router.push("/payment");
       }
@@ -73,7 +73,7 @@ export default function DashboardLayout({
             >
               <Topbar
                 userName={user?.name || user?.admin}
-                onSearch={(query) => {}}
+                onSearch={() => {}}
                 onNotificationClick={() => {}}
                 onProfileClick={() => {}}
               />

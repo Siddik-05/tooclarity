@@ -11,7 +11,7 @@ export default function HeroSection() {
   return (
     <>
       {/* Content}*/}
-      <div className=" items-center justify-center md:mt-16 mt-30">
+      <div className=" items-center justify-center md:mt-16 mt-15">
         <div className="space-y-2 sm:space-y-3 md:space-y-4 w-full flex flex-col items-center">
           <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-[#000000] leading-tight tracking-tight text-center">
             Find Your Right Career Path
@@ -22,7 +22,7 @@ export default function HeroSection() {
         </div>
 
         {/* Subtext */}
-        <p className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-[#000000] mt-4 sm:mt-5 md:mt-6 max-w-2xl mx-auto text-center">
+        <p className="text-[10px] sm:text-[12px] md:text-[12px] lg:text-[6px] xl:text-2xl whitespace-nowrap text-center[#000000] mt-4 sm:mt-5 md:mt-6 max-w-2xl mx-auto text-center">
           Personalised Guidance, Scholarship Matching, And A Clear Action-Plan.
         </p>
       </div>
@@ -31,13 +31,13 @@ export default function HeroSection() {
       <div className="mt-6 flex items-center justify-center sm:mt-8 mb-10 ">
         <Button 
         onClick={()=>router.push("/student/signup")}
-        className="bg-[#0222D7] cursor-pointer hover:bg-[#001DBA] text-white px-6 sm:px-8 md:px-10 py-6 sm:py-8 md:py-8 text-sm sm:text-base md:text-lg rounded-lg">
+        className="bg-[#0222D7] cursor-pointer text-white px-6 sm:px-8 md:px-10 py-6 sm:py-8 md:py-6 text-sm sm:text-base md:text-lg rounded-lg">
           Start Your Journey
         </Button>
       </div>
 
-      <div className="text-center mb-8 sm:mb-12 relative px-4 sm:px-6 lg:px-8">
-        <div className="text-4xl sm:text-6xl md:text-8xl font-bold text-gray-200 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none">
+      <div className="text-center mb-8 sm:mb-12 md:mt-34 relative px-4 sm:px-6 lg:px-8">
+        <div className="text-5xl sm:text-6xl md:text-8xl font-bold text-gray-200 absolute  left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none">
           Services
         </div>
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold relative z-10">
@@ -59,7 +59,7 @@ export default function HeroSection() {
                   <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-3 border border-gray-100 flex flex-col justify-between relative overflow-hidden w-full flex-1 min-h-[160px] h-[32vh] sm:h-[30vh]">
                     {/* Text Content */}
                     <div className="flex flex-col gap-[3px] z-10 relative pr-[45%]">
-                      <h3 className="text-[13px] font-bold text-gray-900 leading-tight">
+                      <h3 className="text-[13px] font-semibold text-[#000000] leading-tight">
                         Kindergarten
                       </h3>
                       <p className="text-gray-600 text-[9px] leading-snug">
@@ -89,7 +89,7 @@ export default function HeroSection() {
                   <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-3 border border-gray-100 flex flex-col justify-between relative overflow-hidden w-full flex-1 min-h-[140px] h-[20vh] sm:h-[18vh]">
                     {/* Text Content */}
                     <div className="flex flex-col gap-[3px] z-10 relative pr-[40%]">
-                      <h3 className="text-[13px] font-bold text-gray-900 leading-tight">
+                      <h3 className="text-[13px] font-semibold text-[#000000] leading-tight">
                         Graduation
                       </h3>
                       <p className="text-gray-600 text-[9px] leading-snug">
@@ -123,7 +123,7 @@ export default function HeroSection() {
                 <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-1 border border-gray-100 flex flex-col justify-between w-full max-w-xs">
                   {/* Text Section */}
                   <div className="">
-                    <h3 className="text-md font-bold text-gray-900">Schools</h3>
+                    <h3 className="text-md font-semibold text-[#000000]">Schools</h3>
                     <p className="text-gray-600 text-[9px] leading-snug">
                       Discover Top Rated Schools For Your Child.
                     </p>
@@ -155,7 +155,7 @@ export default function HeroSection() {
                   {/* Tuition Centres */}
                   <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-1 border border-gray-100 flex flex-col justify-between">
                     <div className="flex-1">
-                      <h3 className="text-md font-bold text-gray-900 leading-none">
+                      <h3 className="text-md font-semibold text-[#000000] leading-none">
                         Tuition Centres
                       </h3>
                       <p className="text-gray-600 text-[9px] leading-tight line-clamp-2">
@@ -183,7 +183,7 @@ export default function HeroSection() {
                   {/* Intermediate */}
                   <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-1 border border-gray-100 flex flex-col justify-between">
                     <div>
-                      <h3 className="text-[14px] font-bold text-gray-900">
+                      <h3 className="text-[14px] font-semibold text-[#000000]">
                         Intermediate
                       </h3>
                       <p className="text-gray-600 text-[9px] leading-tight line-clamp-2">
@@ -211,7 +211,7 @@ export default function HeroSection() {
                 {/* Row 3: UpskillingService Centres (full width) */}
                 <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-1 border border-gray-100 flex flex-col justify-between">
                   <div className="ml-1">
-                    <h3 className="text-base font-bold text-gray-900">
+                    <h3 className="text-base font-semibold text-[#000000]">
                       UpskillingService Centres
                     </h3>
                     <p className="text-gray-600 text-[9px] leading-tight">
@@ -241,7 +241,7 @@ export default function HeroSection() {
                   {/* Exam Preparation */}
                   <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-1 border border-gray-100 flex flex-col items-center justify-between">
                     <div className="flex-1">
-                      <h3 className="text-sm font-bold text-gray-900 leading-none">
+                      <h3 className="text-sm font-semibold text-[#000000] leading-none">
                         Exam Preparation
                       </h3>
                       <p className="text-gray-600 text-[9px] leading-tight line-clamp-3">
@@ -269,7 +269,7 @@ export default function HeroSection() {
                   {/* Study Abroad */}
                   <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-1 border border-gray-100 flex flex-col justify-between">
                     <div>
-                      <h3 className="text-sm font-bold text-gray-900 leading-none">
+                      <h3 className="text-sm font-semibold text-[#000000] leading-none">
                         Study Abroad
                       </h3>
                       <p className="text-gray-600 text-[9px] leading-tight line-clamp-3">
@@ -306,16 +306,16 @@ export default function HeroSection() {
       {/* Kindergarten */}
       <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 p-5 flex flex-col justify-between h-[460px]">
         <div>
-          <h3 className="text-[24px] font-bold text-gray-900 mb-1">Kindergarten</h3>
-          <p className="text-gray-600 text-sm leading-snug">
+          <h3 className="text-[24px] font-semibold text-[#000000] mb-1">Kindergarten</h3>
+          <p className="text-[#000000] text-sm leading-snug">
             Find The Best Kindergarten For Your Little One Near You
           </p>
-          <a href="/student/signup" className="inline-flex items-center text-blue-700 font-medium hover:text-blue-800 text-sm mt-2">
+          <a href="/student/signup" className="inline-flex items-center text-[#0222D7] font-medium hover:text-blue-800 text-sm mt-2">
             Explore Options Now! →
           </a>
         </div>
         <div className="flex justify-end mt-auto">
-          <Image width={380} height={380} src="/kinderGarten.jpg" alt="ABC Learning"
+          <Image width={300} height={380} src="/kinderGarten.jpg" alt="ABC Learning"
             className="bottomw-[400px] h-[245px] object-contain" />
         </div>
       </div>
@@ -323,15 +323,15 @@ export default function HeroSection() {
       {/* Schools */}
       <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 p-5 flex flex-col justify-between h-[200px]">
         <div>
-          <h3 className="text-[24px] font-bold text-gray-900 mb-1">Schools</h3>
+          <h3 className="text-[24px] font-semibold text-[#000000] mb-1">Schools</h3>
           <p className="text-[#000000] text-[16px] leading-snug">
             Discover Top-Rated Schools That Shape Your Child&apos;s Future
           </p>
-          <a href="/student/signup" className="inline-flex items-center text-blue-700 font-medium hover:text-blue-800 text-xs mt-2">
+          <a href="/student/signup" className="inline-flex items-center text-[#0222D7] font-medium hover:text-blue-800 text-xs mt-2">
             Compare And Choose Wisely! →
           </a>
         </div>
-        <div className="flex justify-end mt-auto">
+        <div className="flex mt-[-500px] ml-[-100px] justify-end ">
           <Image width={100}
                         height={100} src="/school.jpg" alt="School" className="w-[170px] h-[96px] object-contain" />
         </div>
@@ -343,11 +343,11 @@ export default function HeroSection() {
       {/* Tuition Centres */}
       <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 p-5 flex flex-col justify-between h-[260px]">
         <div>
-          <h3 className="text-[24px] font-bold text-gray-900 mb-1">Tuition Centres</h3>
-          <p className="text-gray-600 text-sm leading-snug">
+          <h3 className="text-[24px] font-semibold text-[#000000] mb-1">Tuition Centres</h3>
+          <p className="text-[#000000] text-sm leading-snug">
             Struggling With Studies? Find Expert Tutors Nearby Who Can Help You Score Better!
           </p>
-          <a href="/student/signup" className="inline-flex items-center text-blue-700 font-medium hover:text-blue-800 text-sm mt-2">
+          <a href="/student/signup" className="inline-flex items-center text-[#0222D7] font-medium hover:text-blue-800 text-sm mt-2">
             Start Exploring →
           </a>
         </div>
@@ -362,29 +362,29 @@ export default function HeroSection() {
         {/* Intermediate */}
         <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 p-4 flex flex-col justify-between h-[180px]">
           <div>
-            <h3 className="text-[24px] font-bold text-gray-900 mb-1">Intermediate</h3>
-            <p className="text-gray-600 text-xs leading-snug">
+            <h3 className="text-[24px] font-semibold text-[#000000] mb-1">Intermediate</h3>
+            <p className="text-[#000000] text-sm leading-snug">
               Choose The Right Intermediate College For Your Stream
             </p>
-            <a href="/student/signup" className="text-blue-700 font-medium hover:text-blue-800 text-xs mt-2 inline-block">
+            <a href="/student/signup" className="text-[#0222D7] font-medium  text-xs mt-2 inline-block">
               Start Exploring →
             </a>
           </div>
-          <div className="flex  justify-end mt-auto">
+          <div className="flex mt-[-500px] ml-[-100px] justify-end">
             <Image width={100}
                         height={100} src="/intermediate.jpg" alt="Intermediate"
-              className="w-[90px] h-[60px] object-contain" />
+              className="w-[65px] h-[70px] object-contain" />
           </div>
         </div>
 
         {/* Graduate */}
         <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 p-4 flex flex-col justify-between h-[180px]">
           <div>
-            <h3 className="text-[24px] font-bold text-gray-900 mb-1">Graduate</h3>
-            <p className="text-gray-600 text-xs leading-snug">
+            <h3 className="text-[24px] font-semibold text-[#000000] mb-1">Graduate</h3>
+            <p className="text-[#000000] text-sm leading-snug">
               Explore Verified Colleges For UG/PG Programs
             </p>
-            <a href="/student/signup" className="text-blue-700 font-medium hover:text-blue-800 text-xs mt-2 inline-block">
+            <a href="/student/signup" className="text-[#0222D7] font-medium text-xs mt-2 inline-block">
               Start Exploring →
             </a>
           </div>
@@ -399,18 +399,21 @@ export default function HeroSection() {
       {/* Exam Preparation */}
       <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 p-5 flex flex-col justify-between h-[200px]">
         <div>
-          <h3 className="text-[24px] font-bold text-gray-900 mb-1">Exam Preparation</h3>
-          <p className="text-gray-600 text-sm leading-snug">
-            Preparing for JEE, NEET, UPSC, Or Other Exams? Find The Best Coaching Now!
+          <h3 className="text-[18px] font-semibold text-[#000000] mb-1">Exam Preparation</h3>
+          <p className="text-[#000000] text-sm leading-snug">
+            Preparing for JEE, NEET,
+            <br/> UPSC, Or Other Competitive
+            <br/> Exams? Find The Best
+            <br/> Coaching Now
           </p>
-          <a href="/student/signup" className="inline-flex items-center text-blue-700 font-medium hover:text-blue-800 text-sm mt-2">
+          <a href="/student/signup" className="inline-flex items-center text-[#0222D7] font-medium hover:text-blue-800 text-sm mt-2">
             Start Exploring →
           </a>
         </div>
-        <div className="flex justify-end mt-auto">
+        <div className="flex mt-[-500px] ml-[-100px] justify-end ">
           <Image width={100}
                         height={100} src="/ExamPrep2Service.jpg" alt="Exam Prep"
-            className="w-[210px] h-[90px] object-contain" />
+            className="w-[200px] h-[120px] object-contain" />
         </div>
       </div>
     </div>
@@ -420,11 +423,11 @@ export default function HeroSection() {
       {/* Upskilling Centres */}
       <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 p-5 flex flex-col justify-between h-[350px]">
         <div>
-          <h3 className="text-[24px] font-bold text-gray-900 mb-1">Upskilling Centres</h3>
-          <p className="text-gray-600 text-sm leading-snug">
+          <h3 className="text-[24px] font-semibold text-[#000000] mb-1">Upskilling Centres</h3>
+          <p className="text-[#000000] text-sm leading-snug">
             Learn Job-Ready Skills And Boost Your Career With Trending Courses From Top Institutes!
           </p>
-          <a href="/student/signup" className="inline-flex items-center text-blue-700 font-medium hover:text-blue-800 text-sm mt-2">
+          <a href="/student/signup" className="inline-flex items-center text-[#0222D7] font-medium hover:text-blue-800 text-sm mt-2">
             Start Exploring →
           </a>
         </div>
@@ -438,11 +441,11 @@ export default function HeroSection() {
       {/* Study Abroad */}
       <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 p-5 flex flex-col justify-between h-[300px]">
         <div>
-          <h3 className="text-[24px] font-bold text-gray-900 mb-1">Study Abroad</h3>
-          <p className="text-gray-600 text-sm leading-snug">
+          <h3 className="text-[24px] font-semibold text-[#000000] mb-1">Study Abroad</h3>
+          <p className="text-[#000000] text-sm leading-snug">
             Lorem Ipsum Is Simply Dummy Text Of The Printing.
           </p>
-          <a href="/student/signup" className="inline-flex items-center text-blue-700 font-medium hover:text-blue-800 text-sm mt-2">
+          <a href="/student/signup" className="inline-flex items-center text-[#0222D7] font-medium hover:text-blue-800 text-sm mt-2">
             Start Exploring →
           </a>
         </div>

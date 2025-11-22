@@ -93,19 +93,50 @@ export default function StreamsSection() {
   return (
     <>
       {/* Section Heading */}
-      <div className="text-center mb-8 sm:mb-12 relative px-4 sm:px-6 lg:px-8">
-        <div className="text-4xl sm:text-6xl md:text-8xl font-bold text-gray-200 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none">
+      {/* <div className="text-center md:mt-25 mt-20 mb-8 sm:mb-12 relative px-12 sm:px-6 lg:px-8">
+        <div className="text-4xl  sm:text-6xl md:text-8xl font-bold text-gray-200 absolute  left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none">
           Explore Streams
         </div>
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold relative z-10">
           Explore Streams That Shape Your Future
         </h2>
-      </div>
+      </div> */}
+      <div className="text-center w-full md:mt-25 mt-15  sm:mb-8 relative px-12 sm:px-6 lg:px-8">
+  {/* BACK TITLE - Explore Streams */}
+  <div
+    className="
+      absolute left-1/2 transform -translate-x-1/2 -translate-y-1/2
+      pointer-events-none select-none
+      font-[Roobert TRIAL] font-extrabold
+      text-gray-200
+       w-full
+      whitespace-nowrap
+      leading-[110%]
+
+      text-[36px]     
+      sm:text-[60px]  
+      md:text-[90px] 
+      lg:text-[135px] 
+
+    "
+    style={{
+      fontWeight: 750,
+    }}
+  >
+    Explore Streams
+  </div>
+
+  {/* MAIN TITLE */}
+  <h2 className="text-1xl text-[#000000] w-full whitespace-nowrap sm:text-3xl md:text-4xl font-bold relative z-10">
+    Explore Streams That Shape Your Future
+  </h2>
+</div>
+
 
       {/* Section Body */}
-      <section className="py-16 px-4 overflow-hidden">
+      <section className="py-6 px-4 overflow-hidden">
         <div className="max-w-6xl mx-auto">
-          <p className="text-center text-black text-lg mb-6">
+          <p className="text-center font-[Roobert TRIAL] text-black text-lg mb-6">
             Get personalized guidance, real-world mentorship, and
             industry-aligned learning to take your next step with confidence.
           </p>
@@ -120,7 +151,7 @@ export default function StreamsSection() {
                   className={`px-4 sm:px-6 py-1.5 sm:py-2 rounded-full font-semibold text-sm sm:text-base transition-all ${
                     activeTab === tab
                       ? "bg-blue-800 text-white shadow-md"
-                      : "text-gray-700 hover:bg-[#dcdcdc]"
+                      : "text-[#000000] hover:bg-[#dcdcdc]"
                   }`}
                 >
                   {tab}
@@ -152,15 +183,15 @@ export default function StreamsSection() {
                   {/* Card */}
                   <div
                     className={`flex-1 ${
-                      index % 2 === 0 ? "text-right" : "text-left"
+                      index % 2 === 0 ? "text-left" : "text-left"
                     }`}
                   >
                     <_Card className="border-[#0222D7] border-[1.5px] rounded-2xl hover:shadow-lg transition-transform duration-300 hover:-translate-y-1">
-                      <_CardContent className="p-6">
+                      <_CardContent className="p-12">
                         <h3 className="text-3xl font-bold mb-2 text-gray-900">
                           {stream.title}
                         </h3>
-                        <p className="text-gray-600 mb-3 text-[25px]">
+                        <p className="text-[#000000] mb-3 text-[15px]">
                           {stream.desc}
                         </p>
                         <button 

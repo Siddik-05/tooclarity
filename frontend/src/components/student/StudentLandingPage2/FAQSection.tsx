@@ -57,19 +57,19 @@ export default function FAQSection() {
           <div className="mt-4">
             <button 
             onClick={()=>router.push("/student/signup")}
-            className="bg-blue-800 cursor-pointer text-white text-base sm:text-lg font-medium px-6 sm:px-8 py-3 mb-4 rounded-xl transition-colors duration-200">
+            className="bg-[#0222D7] cursor-pointer text-white text-base sm:text-lg font-medium px-6 sm:px-8 py-3 mb-4 rounded-xl transition-colors duration-200">
               Get in Touch
             </button>
           </div>
           <div className="flex gap-4">
-                <a href="https://www.instagram.com/tooclarity/#" className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-[#000000] hover:bg-blue-700">
-                  <Instagram className="w-5 h-5" />
+                <a href="https://www.instagram.com/tooclarity/#" className="w-12 h-12 bg-[#0222D7] rounded-full flex items-center justify-center text-[#000000] hover:bg-blue-700">
+                  <Instagram className="w-5 h-5 text-white" />
                 </a>
-                <a href="https://www.linkedin.com/company/tooclarity/" className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-[#000000] hover:bg-blue-700">
-                  <Linkedin className="w-5 h-5" />
+                <a href="https://www.linkedin.com/company/tooclarity/" className="w-12 h-12 bg-[#0222D7] rounded-full flex items-center justify-center text-[#000000] hover:bg-blue-700">
+                  <Linkedin className="w-5 h-5 text-white" />
                 </a>
-                <a href="https://www.youtube.com/@tooclarity" className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-[#000000] hover:bg-blue-700">
-                  <Twitter className="w-5 h-5" />
+                <a href="https://www.twitter.com/@tooclarity" className="w-12 h-12 bg-[#0222D7] rounded-full flex items-center justify-center text-[#000000] hover:bg-blue-700">
+                  <Twitter className="w-5 h-5 text-white" />
                 </a>
               </div>
         </div>

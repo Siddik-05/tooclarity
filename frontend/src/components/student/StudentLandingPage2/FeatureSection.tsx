@@ -3,15 +3,16 @@ import Image from "next/image";
 const EducationalJourney = () => {
   return (
     <>
-      <div className="text-center mb-8 sm:mb-12 relative px-4 sm:px-6 lg:px-8">
-        <div className="text-4xl sm:text-6xl md:text-8xl font-bold text-gray-200 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none">
+      <div className="text-center mt-8 md:mt-18 sm:px-6 lg:px-8">
+        <div className="text-4xl sm:text-6xl w-full
+      whitespace-nowrap md:text-8xl font-bold text-gray-200 absolute  left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none">
           Build to Guide you
         </div>
-        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold relative z-10">
+        <h2 className="text-1xl whitespace-nowrap sm:text-3xl md:text-4xl font-bold relative z-10">
           Build to Guide you, Not confuse you
         </h2>
       </div>
-      <div className="min-h-screen bg-background py-12 px-4">
+      <div className="min-h-screen bg-background py-8 px-4">
         <div className=" mx-auto">
           {/* Top Features */}
           {/* Feature Cards */}
@@ -38,7 +39,7 @@ const EducationalJourney = () => {
               <h3 className="font-semibold text-sm sm:text-base md:text-lg mb-1 sm:mb-2">
                 Career Guidance
               </h3>
-              <p className="text-xs sm:text-sm md:text-sm text-gray-600 leading-relaxed">
+              <p className="text-xs sm:text-sm md:text-sm text-[#000000] leading-relaxed">
                 Get Recommendations Personalized To Your Interests, Skills, And
                 Aspirations
               </p>
@@ -66,7 +67,7 @@ const EducationalJourney = () => {
               <h3 className="font-semibold text-sm sm:text-base md:text-lg mb-1 sm:mb-2">
                 Scholarship Access
               </h3>
-              <p className="text-xs sm:text-sm md:text-sm text-gray-600 leading-relaxed">
+              <p className="text-xs sm:text-sm md:text-sm text-[#000000] leading-relaxed">
                 Affordable Education Made Possible Through Verified
                 Scholarships.
               </p>
@@ -106,7 +107,7 @@ const EducationalJourney = () => {
               <h3 className="font-semibold text-sm sm:text-base md:text-lg mb-1 sm:mb-2">
                 Unbiased Support
               </h3>
-              <p className="text-xs sm:text-sm md:text-sm text-gray-600 leading-relaxed">
+              <p className="text-xs sm:text-sm md:text-sm text-[#000000] leading-relaxed">
                 No External Pressure Just What&apos;s Best For Your Growth.
               </p>
             </div>
@@ -133,7 +134,7 @@ const EducationalJourney = () => {
               <h3 className="font-semibold text-sm sm:text-base md:text-lg mb-1 sm:mb-2">
                 Instant Admission Updates
               </h3>
-              <p className="text-xs sm:text-sm md:text-sm text-gray-600 leading-relaxed">
+              <p className="text-xs sm:text-sm md:text-sm text-[#000000] leading-relaxed">
                 Get Timely Alerts For Key Deadlines And Openings.
               </p>
             </div>

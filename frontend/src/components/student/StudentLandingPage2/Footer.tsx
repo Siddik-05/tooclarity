@@ -48,15 +48,15 @@ const FOOTER_ROUTES = {
 
 const CONTACT_INFO = [
   {
-    icon: <Mail className="w-4 h-4 text-gray-700 flex-shrink-0" />,
+    icon: <Mail className="w-4 h-4 text-white flex-shrink-0" />,
     label: "tooclarity@gmail.com",
   },
   {
-    icon: <Phone className="w-4 h-4 text-gray-700 flex-shrink-0" />,
+    icon: <Phone className="w-4 h-4 text-white flex-shrink-0" />,
     label: "+91 88519 60009",
   },
   {
-    icon: <MapPin className="w-4 h-4 text-gray-700 mt-1 flex-shrink-0" />,
+    icon: <MapPin className="w-4 h-4 text-white mt-1 flex-shrink-0" />,
     label: "Tarnaka, Secunderbad, Hyderabad 500007",
   },
 ];
@@ -172,7 +172,7 @@ export default function Footer() {
   return (
     <>
       <footer
-        className="bg-[#0222D7] overflow-y-hidden border-t py-8 sm:py-12 px-4 sm:px-6 lg:px-20"
+        className="bg-[#011481] overflow-y-hidden border-t py-8 sm:py-12 px-4 sm:px-6 lg:px-20"
         role="contentinfo"
       >
         <div className="max-w-7xl mx-auto flex flex-col items-center md:items-start">
@@ -225,67 +225,6 @@ export default function Footer() {
             ))}
           </div>
         </div>
-
-        {/* ===== Top Blue Header (Info Bar) ===== */}
-      {/* ===== Top Blue Header (Info Bar) ===== */}
-<header
-  className="w-full bg-[#0222D7] text-white text-sm py-2 mt-10"
->
-  <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between px-4 sm:px-6">
-    {/* Left Section - Logo + Contact Info */}
-    <div className="flex items-center gap-6 sm:gap-12 flex-wrap">
-      {/* Phone */}
-      <div className="flex items-center gap-3">
-        <Phone className="md:w-4 w-2 h-4 text-white" />
-        <a
-          href="tel:+911234567890"
-          className="md:text-[16px] text-[8px] hover:underline whitespace-nowrap"
-        >
-          +91 93911 60205
-        </a>
-      </div>
-
-      {/* Email */}
-      <div className="flex items-center gap-2">
-        <Mail className="md:w-4 w-2 h-4 text-white" />
-        <a
-          href="mailto:info@tooclarity.com"
-          className="md:text-[16px] text-[8px] hover:underline whitespace-nowrap"
-        >
-          toocalrity0@gmail.com
-        </a>
-      </div>
-    </div>
-
-    {/* Right Section - Social Links */}
-    <div className="flex items-center gap-4 mt-2 sm:mt-0">
-      <a
-        href="https://instagram.com/"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="hover:text-gray-200"
-      >
-        <Instagram className="w-5 h-5" />
-      </a>
-      <a
-        href="https://twitter.com/"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="hover:text-gray-200"
-      >
-        <Twitter className="w-5 h-5" />
-      </a>
-      <a
-        href="https://linkedin.com/"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="hover:text-gray-200"
-      >
-        <Linkedin className="w-5 h-5" />
-      </a>
-    </div>
-  </div>
-</header>
 
       </footer>
         {/* Footer Bottom - Full-width, accessible copyright */}

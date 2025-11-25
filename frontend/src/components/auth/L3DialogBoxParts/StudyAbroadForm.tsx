@@ -3,6 +3,23 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import InputField from "@/components/ui/InputField";
 
+interface StudyAbroadFormProps {
+  formData: {
+    applicationAssistance: string;
+    visaProcessingSupport: string;
+    testOperation: string;
+    preDepartureOrientation: string;
+    accommodationAssistance: string;
+    educationLoans: string;
+    postArrivalSupport: string;
+  };
+  formErrors: Record<string, string>;
+  onRadioChange: (name: string, value: string) => void;
+  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  isLoading: boolean;
+  onPrevious?: () => void;
+}
+
 export default function StudyAbroadForm({
   formData,
   formErrors,
@@ -10,7 +27,7 @@ export default function StudyAbroadForm({
   onSubmit,
   isLoading,
   onPrevious,
-}: any) {
+}: StudyAbroadFormProps) {
   return (
     <>
       <div className="space-y-2">
@@ -30,7 +47,7 @@ export default function StudyAbroadForm({
             label="Application Assistance"
             name="applicationAssistance"
             value={formData.applicationAssistance}
-            onChange={(e: any) => onRadioChange("applicationAssistance", e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => onRadioChange("applicationAssistance", e.target.value)}
             isRadio
             options={["Yes", "No"]}
             error={formErrors.applicationAssistance}
@@ -40,7 +57,7 @@ export default function StudyAbroadForm({
             label="Visa Processing Support"
             name="visaProcessingSupport"
             value={formData.visaProcessingSupport}
-            onChange={(e: any) => onRadioChange("visaProcessingSupport", e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => onRadioChange("visaProcessingSupport", e.target.value)}
             isRadio
             options={["Yes", "No"]}
             error={formErrors.visaProcessingSupport}
@@ -53,7 +70,7 @@ export default function StudyAbroadForm({
             label="Test Operation (IELTS,TOEFL,GRE,GMAT,SAT)"
             name="testOperation"
             value={formData.testOperation}
-            onChange={(e: any) => onRadioChange("testOperation", e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => onRadioChange("testOperation", e.target.value)}
             isRadio
             options={["Yes", "No"]}
             error={formErrors.testOperation}
@@ -63,7 +80,7 @@ export default function StudyAbroadForm({
             label="Pre-departure orientation"
             name="preDepartureOrientation"
             value={formData.preDepartureOrientation}
-            onChange={(e: any) => onRadioChange("preDepartureOrientation", e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => onRadioChange("preDepartureOrientation", e.target.value)}
             isRadio
             options={["Yes", "No"]}
             error={formErrors.preDepartureOrientation}
@@ -76,7 +93,7 @@ export default function StudyAbroadForm({
             label="Accommodation assistance"
             name="accommodationAssistance"
             value={formData.accommodationAssistance}
-            onChange={(e: any) => onRadioChange("accommodationAssistance", e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => onRadioChange("accommodationAssistance", e.target.value)}
             isRadio
             options={["Yes", "No"]}
             error={formErrors.accommodationAssistance}
@@ -86,7 +103,7 @@ export default function StudyAbroadForm({
             label="Education loans/Financial aid guidance"
             name="educationLoans"
             value={formData.educationLoans}
-            onChange={(e: any) => onRadioChange("educationLoans", e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => onRadioChange("educationLoans", e.target.value)}
             isRadio
             options={["Yes", "No"]}
             error={formErrors.educationLoans}
@@ -99,7 +116,7 @@ export default function StudyAbroadForm({
             label="Post-arrival support"
             name="postArrivalSupport"
             value={formData.postArrivalSupport}
-            onChange={(e: any) => onRadioChange("postArrivalSupport", e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => onRadioChange("postArrivalSupport", e.target.value)}
             isRadio
             options={["Yes", "No"]}
             error={formErrors.postArrivalSupport}

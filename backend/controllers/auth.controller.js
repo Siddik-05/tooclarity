@@ -55,16 +55,25 @@ exports.register = async (req, res, next, options = {}) => {
         console.log("Google ID already in use.");
         throw new Error("GOOGLE_ID_EXISTS");
       }
+      if ((existingUser = await checkDuplicateUser({ email }))) {
+        console.log("Email already in Use.");
+        throw new Error("EMAIL_EXISTS");
+      }
     }
     if (type === "institution") {
-      existingUser = await checkDuplicateUser({
-        $or: [{ email }, { contactNumber }],
-      });
+      const query = [];
+      if (email) query.push({ email });
+      if (contactNumber) query.push({ contactNumber });
+      if (query.length > 0) {
+        existingUser = await checkDuplicateUser({ $or: query });
+      }
       if (existingUser) {
         const conflictField =
           existingUser.email === email ? "Email" : "Contact number";
+
         if (options.returnTokens)
           throw new Error(`${conflictField.toUpperCase()}_EXISTS`);
+
         return await abort(409, `${conflictField} already in use.`);
       }
     } else if (type === "student" && !googleId) {
@@ -576,21 +585,20 @@ exports.resetPassword = async (req, res, next) => {
 
 exports.resendOtp = async (req, res, next) => {
   try {
-    const { email, contactNumber} = req.body;
+    const { email, contactNumber } = req.body;
     if (!email && !contactNumber) {
       return res.status(400).json({
         status: "fail",
         message: "Either email or contact number must be provided.",
       });
     }
-    if(email){
+    if (email) {
       await otpService.sendVerificationToken(email);
       return res.status(200).json({
         status: "success",
         message: "OTP resent to email successfully.",
       });
-    }
-    else if(contactNumber){
+    } else if (contactNumber) {
       await otpService.sendVerificationTokenSMS(contactNumber);
       return res.status(200).json({
         status: "success",
@@ -617,9 +625,7 @@ exports.updatePhoneNumber = async (req, res, next) => {
     // Update user and return the updated document
     const updatedUser = await InstituteAdmin.findByIdAndUpdate(
       userId,
-      { contactNumber,
-        isPhoneVerified: false,
-      },
+      { contactNumber, isPhoneVerified: false },
       { new: true } // returns updated document
     );
 

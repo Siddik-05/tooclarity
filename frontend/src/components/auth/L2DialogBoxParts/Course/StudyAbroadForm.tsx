@@ -5,6 +5,7 @@ import { Upload } from "lucide-react";
 import type { Course } from "../../L2DialogBox";
 import { ChangeEvent } from "react";
 import Image from "next/image";
+import StateDistrictFields from "./common/StateDistrictFields";
 
 interface StudyAbroadFormProps {
   currentCourse: Course;
@@ -92,7 +93,7 @@ export default function StudyAbroadForm({
         />
 
         <InputField
-          label="Countries you offer"
+          label="Country you offer"
           name="countriesOffered"
           value={currentCourse.countriesOffered || ""}
           onChange={handleCourseChange}
@@ -115,6 +116,13 @@ export default function StudyAbroadForm({
           required
         />
       </div>
+
+      {/* State and District Fields */}
+      <StateDistrictFields
+        currentCourse={currentCourse}
+        handleCourseChange={handleCourseChange}
+        courseErrors={courseErrors}
+      />
 
       {/* Image and Brochure Upload */}
       <div className="grid md:grid-cols-2 gap-6">
@@ -190,19 +198,19 @@ export default function StudyAbroadForm({
       {/* Legal Verification Section */}
       <div className="space-y-4">
         <h4 className="font-semibold text-[18px]">Legal Verification</h4>
-        
+
         <div className="grid md:grid-cols-2 gap-6">
           {/* Business Proof Upload */}
           <div className="flex flex-col gap-2">
             <label className="font-medium text-[16px]">
-              Upload Business Proof (jpg / jpeg)
+              Upload Business Proof (jpg / jpeg) <span className="text-red-500">*</span>
             </label>
             <label className="relative w-full h-[180px] rounded-[12px] border-2 border-dashed border-[#DADADD] bg-[#F8F9FA] flex flex-col items-center justify-center cursor-pointer hover:bg-[#F0F1F2] transition-colors overflow-hidden">
-              {currentCourse.businessProofPreviewUrl || currentCourse.businessProofUrl ? (
+              {currentCourse.businessProofUrl || currentCourse.businessProofPreviewUrl ? (
                 <Image
                   width={100}
                   height={100}
-                  src={currentCourse.businessProofPreviewUrl || currentCourse.businessProofUrl ||"/placeholder.png"}
+                  src={currentCourse.businessProofUrl || currentCourse.businessProofPreviewUrl || "/placeholder.png"}
                   alt="Business Proof Preview"
                   className="w-[100px] h-[100px] object-cover rounded-md"
                 />
@@ -229,10 +237,10 @@ export default function StudyAbroadForm({
           {/* PAN/Aadhaar Upload */}
           <div className="flex flex-col gap-2">
             <label className="font-medium text-[16px]">
-              Upload PAN or Aadhar of authority person (pdf)
+              Upload PAN or Aadhar of authority person (pdf) <span className="text-red-500">*</span>
             </label>
             <label className="relative w-full h-[180px] rounded-[12px] border-2 border-dashed border-[#DADADD] bg-[#F8F9FA] flex flex-col items-center justify-center cursor-pointer hover:bg-[#F0F1F2] transition-colors overflow-hidden">
-              {currentCourse.panAadhaarPreviewUrl || currentCourse.panAadhaarUrl ? (
+              {currentCourse.panAadhaarUrl || currentCourse.panAadhaarPreviewUrl ? (
                 <div className="flex flex-col items-center justify-center gap-2 p-4 w-full h-full">
                   <span className="text-sm text-gray-500 truncate">
                     {currentCourse.panAadhaar instanceof File

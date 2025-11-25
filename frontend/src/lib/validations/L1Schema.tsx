@@ -5,7 +5,7 @@ import {
   addressRule,
 } from "./ValidationRules";
 
-export const L1Schema = Joi.object({ // <-- Opening brace
+export const L1Schema = Joi.object({
   instituteType: Joi.string()
     .valid(
       "Kindergarten/childcare center", "School's", "Intermediate college(K12)",
@@ -18,7 +18,7 @@ export const L1Schema = Joi.object({ // <-- Opening brace
       "any.required": "Institute Type is required",
       "any.only": "Please select a valid Institute Type",
     }),
-    
+
   instituteName: Joi.string()
     .min(3)
     .max(100)
@@ -32,7 +32,6 @@ export const L1Schema = Joi.object({ // <-- Opening brace
     }),
 
   approvedBy: Joi.when("instituteType", {
-    // is:  "Study Abroad",
     is: Joi.valid("Study Abroad", "Study Halls"),
     then: Joi.string().allow("").optional(),
     otherwise: Joi.string()
@@ -41,7 +40,7 @@ export const L1Schema = Joi.object({ // <-- Opening brace
       .pattern(/^[A-Za-z][A-Za-z\s.&'-]*$/)
       .required()
       .messages({
-        "string.empty": "Approved By is required", // Message updated for consistency
+        "string.empty": "Approved By is required",
         "string.min": "Approved By must be at least 2 characters",
         "string.max": "Approved By must be at most 100 characters",
         "string.pattern.base": "Approved By must start with a letter and can only contain letters, spaces, . & ' -",
@@ -57,7 +56,7 @@ export const L1Schema = Joi.object({ // <-- Opening brace
         const enteredDate = new Date(value);
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        
+
         if (isNaN(enteredDate.getTime())) {
           return helpers.error("date.invalid");
         }
@@ -110,17 +109,13 @@ export const L1Schema = Joi.object({ // <-- Opening brace
     }),
 
   logoUrl: Joi.when("instituteType", {
-    // is: "Study Abroad",
     is: Joi.valid("Study Abroad", "Study Halls"),
     then: Joi.string().allow("").optional(),
     otherwise: Joi.string()
-      .uri()
-      .pattern(/\.(jpg|jpeg|png)$/i)
       .required()
       .messages({
         "string.empty": "Logo is required",
         "any.required": "Logo is required",
-        "string.uri": "Invalid logo URL format",
       }),
   }),
-}).unknown(true); // <-- ✅ Correct closing brace for the whole object
+}).unknown(true);

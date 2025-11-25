@@ -669,67 +669,67 @@ const l2CoachingCourseRules = [
       "Finance",
       "Civil Services & Administrative",
       "Banking Exams",
-        "Insurance Exams",
-        "Railways Exams",
-        "SSC Exams (Staff Selection Commission)",
-        "Defence Exams",
-        "Police & Law Enforcement",
-        "Teaching Exams",
-        "Legal & Judicial Services",
-        "State Government Exams",
-        "Central Government Recruitment",
-        "Research & Scientific",
-        "Other Government Exams",
-        "ENGINEERING ENTRANCE EXAMS - INDIA",
-        "Architecture Entrance",
-        "MEDICAL ENTRANCE EXAMS - INDIA",
-        "Physiotherapy Entrance Exams",
-        "MANAGEMENT ENTRANCE EXAMS - INDIA",
-        "LAW ENTRANCE EXAMS - INDIA",
-        "DESIGN & CREATIVE ENTRANCE EXAMS - INDIA",
-        "HOTEL MANAGEMENT & HOSPITALITY EXAMS - INDIA",
-        "MASS COMMUNICATION & JOURNALISM - INDIA",
-        "OTHER PROFESSIONAL ENTRANCE EXAMS - INDIA",
-        "SCHOOL/FOUNDATION LEVEL EXAMS - INDIA",
-        "INTERNATIONAL EXAMS",
-        "Programming Languages",
-          "Web Development",
-          "Mobile App Development",
-          "Database & Backend",
-          "DevOps & Cloud",
-          "Data Science & Analytics",
-          "Artificial Intelligence & Machine Learning",
-          "Cyber Security",
-          "Blockchain & Emerging Tech",
-          "Software Testing & QA",
-          "UI/UX & Design Tech",
-          "IT Management & Architecture",
-          "Game Development",
-          "Specialized IT Areas",
-          "Graphic Design & Visual Arts",
-          "Video & Motion Graphics",
-          "Photography",
-          "Music & Audio",
-          "Beauty & Wellness",
-          "Fashion & Styling",
-          "Marketing & Sales",
-          "Business Management",
-          "Finance & Accounting",
-          "Human Resources",
-          "Supply Chain & Logistics",
-          "Language Learning",
-          "Communication & Soft Skills",
-          "Health & Fitness",
-          "Culinary Arts & Food",
-          "Performing Arts",
-          "Craft & DIY",
-          "Interior Design & Home Decor",
-          "Event Management & Hospitality",
-          "Automobile & Mechanics",
-          "Other Vocational Skills",
-          "Real Estate",
-          "Agriculture & Farming",
-          "Pet Care"
+      "Insurance Exams",
+      "Railways Exams",
+      "SSC Exams (Staff Selection Commission)",
+      "Defence Exams",
+      "Police & Law Enforcement",
+      "Teaching Exams",
+      "Legal & Judicial Services",
+      "State Government Exams",
+      "Central Government Recruitment",
+      "Research & Scientific",
+      "Other Government Exams",
+      "ENGINEERING ENTRANCE EXAMS - INDIA",
+      "Architecture Entrance",
+      "MEDICAL ENTRANCE EXAMS - INDIA",
+      "Physiotherapy Entrance Exams",
+      "MANAGEMENT ENTRANCE EXAMS - INDIA",
+      "LAW ENTRANCE EXAMS - INDIA",
+      "DESIGN & CREATIVE ENTRANCE EXAMS - INDIA",
+      "HOTEL MANAGEMENT & HOSPITALITY EXAMS - INDIA",
+      "MASS COMMUNICATION & JOURNALISM - INDIA",
+      "OTHER PROFESSIONAL ENTRANCE EXAMS - INDIA",
+      "SCHOOL/FOUNDATION LEVEL EXAMS - INDIA",
+      "INTERNATIONAL EXAMS",
+      "Programming Languages",
+      "Web Development",
+      "Mobile App Development",
+      "Database & Backend",
+      "DevOps & Cloud",
+      "Data Science & Analytics",
+      "Artificial Intelligence & Machine Learning",
+      "Cyber Security",
+      "Blockchain & Emerging Tech",
+      "Software Testing & QA",
+      "UI/UX & Design Tech",
+      "IT Management & Architecture",
+      "Game Development",
+      "Specialized IT Areas",
+      "Graphic Design & Visual Arts",
+      "Video & Motion Graphics",
+      "Photography",
+      "Music & Audio",
+      "Beauty & Wellness",
+      "Fashion & Styling",
+      "Marketing & Sales",
+      "Business Management",
+      "Finance & Accounting",
+      "Human Resources",
+      "Supply Chain & Logistics",
+      "Language Learning",
+      "Communication & Soft Skills",
+      "Health & Fitness",
+      "Culinary Arts & Food",
+      "Performing Arts",
+      "Craft & DIY",
+      "Interior Design & Home Decor",
+      "Event Management & Hospitality",
+      "Automobile & Mechanics",
+      "Other Vocational Skills",
+      "Real Estate",
+      "Agriculture & Farming",
+      "Pet Care"
     ])
     .withMessage("Please select a valid domain type."),
 
@@ -873,6 +873,43 @@ const l2StudyHallRules = [
   body("hasPersonalLocker")
     .isIn(["Yes", "No"])
     .withMessage("A selection for Personal Lockers is required."),
+
+  // Allows 'createdBranch' to be optional
+  body("createdBranch").optional({ checkFalsy: true }).trim(),
+];
+
+// ✅ --- L2 STUDY ABROAD COURSE RULES ---
+const l2StudyAbroadRules = [
+  // Basic consultancy fields
+  body("consultancyName")
+    .trim()
+    .notEmpty()
+    .withMessage("Consultancy name is required."),
+
+  body("studentAdmissions")
+    .notEmpty()
+    .withMessage("Student admissions count is required.")
+    .isInt({ min: 0 })
+    .withMessage("Student admissions must be a non-negative number."),
+
+  body("countriesOffered")
+    .trim()
+    .notEmpty()
+    .withMessage("Country selection is required.")
+    .not()
+    .equals("Select Country")
+    .withMessage("Please select a valid country."),
+
+  body("academicOfferings")
+    .trim()
+    .notEmpty()
+    .withMessage("Academic offering is required.")
+    .not()
+    .equals("Select Academic type")
+    .withMessage("Please select a valid academic type."),
+
+  // File uploads are optional as per frontend schema
+  // imageUrl, brochureUrl, businessProofUrl, panAadhaarUrl are optional
 
   // Allows 'createdBranch' to be optional
   body("createdBranch").optional({ checkFalsy: true }).trim(),
@@ -1101,12 +1138,10 @@ const intermediateCollegeL3Rules = [
 
 const ugPgUniversityL3Rules = [
   // Validates dropdowns
-  // ✅ Updated to match the new frontend options
   body("ownershipType")
     .isIn(["Government", "Private", "Semi-Government", "Aided", "Unaided"])
     .withMessage("Invalid ownership type selected."),
 
-  // ✅ Updated to match the new frontend options
   body("collegeCategory")
     .isIn([
       "Engineering",
@@ -1119,7 +1154,6 @@ const ugPgUniversityL3Rules = [
     ])
     .withMessage("Invalid college category selected."),
 
-  // ✅ Updated from a text validation to a specific dropdown validation
   body("affiliationType")
     .isIn([
       "University",
@@ -1129,7 +1163,6 @@ const ugPgUniversityL3Rules = [
       "Other",
     ])
     .withMessage("Invalid affiliation type selected."),
-  // Validates the Yes/No fields, which are converted to booleans on the backend
   body("placementDrives")
     .isBoolean()
     .withMessage("A selection for Placement Drives is required."),
@@ -1192,31 +1225,34 @@ const coachingCenterL3Rules = [
 ];
 
 const studyAbroadL3Rules = [
-  body('consultancyName')
-    .trim()
-    .notEmpty().withMessage('Consultancy name is required.')
-    .isLength({ min: 3, max: 100 }).withMessage('Consultancy name must be between 3 and 100 characters.'),
+  body('applicationAssistance')
+    .isBoolean()
+    .withMessage('A selection for Application Assistance is required.'),
 
-  body('totalAdmissions')
-    .notEmpty().withMessage('Total student admissions count is required.')
-    .isInt({ min: 0 }).withMessage('Total admissions must be a non-negative whole number.'),
+  body('visaProcessingSupport')
+    .isBoolean()
+    .withMessage('A selection for Visa Processing Support is required.'),
 
-  body('countries')
-    .isArray({ min: 1 }).withMessage('At least one country must be selected.'),
-  body('countries.*')
-     .isString().withMessage('Each country must be a string.')
-     .trim()
-     .notEmpty().withMessage('Country names cannot be empty.'),
+  body('testOperation')
+    .isBoolean()
+    .withMessage('A selection for Test Operation is required.'),
 
-  body('academicOfferings')
-    .isArray({ min: 1 }).withMessage('At least one academic offering must be selected.'),
-  body('academicOfferings.*')
-    .isIn(["Bachelors", "Masters", "PhD", "Diploma", "Certificate Programs", "Graduate", "Undergraduate", "Postgraduate"])
-    .withMessage('Invalid academic offering selected.'),
+  body('preDepartureOrientation')
+    .isBoolean()
+    .withMessage('A selection for Pre-departure orientation is required.'),
+
+  body('accommodationAssistance')
+    .isBoolean()
+    .withMessage('A selection for Accommodation assistance is required.'),
+
+  body('educationLoans')
+    .isBoolean()
+    .withMessage('A selection for Education loans/Financial aid guidance is required.'),
+
+  body('postArrivalSupport')
+    .isBoolean()
+    .withMessage('A selection for Post-arrival support is required.'),
 ];
-// END>>> NEW VALIDATION RULESET
-
-// ✅ --- MASTER FILE UPLOAD VALIDATOR ---
 
 exports.validateUploadedFile = async (req, res, next) => {
   console.log("\n--- 🚀 [START] Entered validateUploadedFile Middleware ---");
@@ -1296,6 +1332,9 @@ exports.validateUploadedFile = async (req, res, next) => {
         break;
       case "Study Halls":
         courseValidationChain = l2StudyHallRules;
+        break;
+      case "Study Abroad":
+        courseValidationChain = l2StudyAbroadRules;
         break;
       default:
         courseValidationChain = [];
@@ -1495,6 +1534,7 @@ module.exports.l2UgPgCourseRules = l2UgPgCourseRules;
 module.exports.l2CoachingCourseRules = l2CoachingCourseRules;
 module.exports.l2TuitionCourseRules = l2TuitionCourseRules;
 module.exports.l2StudyHallRules = l2StudyHallRules;
+module.exports.l2StudyAbroadRules = l2StudyAbroadRules;
 
 // =======================
 // --- L3 DETAILS RULES ---

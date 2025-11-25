@@ -35,6 +35,7 @@ import {
   addInstitutionToDB,
   getAllInstitutionsFromDB,
   updateInstitutionInDB,
+  getCoursesGroupsByBranchName,
 } from "@/lib/localDb";
 import {
   exportAndUploadInstitutionAndCourses,
@@ -50,6 +51,7 @@ import CollegeForm from "./L3DialogBoxParts/CollegeForm";
 import CoachingForm from "./L3DialogBoxParts/CoachingForm";
 import UndergraduateForm from "./L3DialogBoxParts/UndergraduateForm";
 import StudyAbroadForm from "./L3DialogBoxParts/StudyAbroadForm";
+import { toast } from "react-toastify";
 
 interface KindergartenFormData extends Record<string, unknown> {
   schoolType: string;
@@ -176,11 +178,11 @@ export default function L3DialogBox({
 
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // Handle controlled open state
   const DialogOpen = open !== undefined ? open : isOpen;
   const setDialogOpen = onOpenChange || setIsOpen;
-  
+
   let institutionType: string | null = null;
   // const institutionType = localStorage.getItem("institutionType");
   if (typeof window !== "undefined") {
@@ -312,7 +314,7 @@ export default function L3DialogBox({
     educationLoans: "",
     postArrivalSupport: "",
   });
-  const [studyAbroadFormErrors, setStudyAbroadFormErrors] = useState<any>({});
+  const [studyAbroadFormErrors, setStudyAbroadFormErrors] = useState<Record<string, string>>({});
 
   const [formErrors, setFormErrors] = useState<
     Partial<Record<keyof FormData, string>>
@@ -332,9 +334,9 @@ export default function L3DialogBox({
 
   // ---------- Handlers ----------
   const handleStudyAbroadRadioChange = (name: string, value: string) => {
-    setStudyAbroadFormData((prev: any) => ({ ...prev, [name]: value }));
-    const error = validateField(StudyAbroadSchema, name as any, value);
-    setStudyAbroadFormErrors((prev: any) => ({ ...prev, [name]: error || "" }));
+    setStudyAbroadFormData((prev) => ({ ...prev, [name]: value }));
+    const error = validateField(StudyAbroadSchema, name, value);
+    setStudyAbroadFormErrors((prev) => ({ ...prev, [name]: error || "" }));
   };
 
 
@@ -378,85 +380,85 @@ export default function L3DialogBox({
       return { ...prev, operationalDays: updatedDays };
     });
   };
-  
-const handleSchoolSubmit = async (e: FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
 
-  // Validate with Joi
-  const errors = validateForm(SchoolSchema, schoolFormData as unknown as Record<string, unknown>);
-  setSchoolFormErrors(errors);
-  if (Object.keys(errors).length > 0) return;
+  const handleSchoolSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-  setIsLoading(true);
+    // Validate with Joi
+    const errors = validateForm(SchoolSchema, schoolFormData as unknown as Record<string, unknown>);
+    setSchoolFormErrors(errors);
+    if (Object.keys(errors).length > 0) return;
 
-  try {
-    const schoolFormDataWithBooleans = {
-      ...schoolFormData,
-      hostelFacility: schoolFormData.hostelFacility === "Yes",
-      playground: schoolFormData.playground === "Yes",
-      busService: schoolFormData.busService === "Yes",
-    };
+    setIsLoading(true);
 
-    const schools = await getAllInstitutionsFromDB?.();
+    try {
+      const schoolFormDataWithBooleans = {
+        ...schoolFormData,
+        hostelFacility: schoolFormData.hostelFacility === "Yes",
+        playground: schoolFormData.playground === "Yes",
+        busService: schoolFormData.busService === "Yes",
+      };
 
-    const normalize = (x: import("@/lib/localDb").InstitutionRecord | Record<string, unknown>) => ({
-      schoolType: x.schoolType || "",
-      schoolCategory: x.schoolCategory || "",
-      curriculumType: x.curriculumType || "",
-      operationalDays: x.operationalDays || [],
-      otherActivities: x.otherActivities || "",
-      hostelFacility: !!x.hostelFacility,
-      playground: !!x.playground,
-      busService: !!x.busService,
-    });
+      const schools = await getAllInstitutionsFromDB?.();
 
-    const latest =
-      schools && schools.length > 0
-        ? schools.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))[0]
-        : undefined;
+      const normalize = (x: import("@/lib/localDb").InstitutionRecord | Record<string, unknown>) => ({
+        schoolType: x.schoolType || "",
+        schoolCategory: x.schoolCategory || "",
+        curriculumType: x.curriculumType || "",
+        operationalDays: x.operationalDays || [],
+        otherActivities: x.otherActivities || "",
+        hostelFacility: !!x.hostelFacility,
+        playground: !!x.playground,
+        busService: !!x.busService,
+      });
 
-    const current = normalize(schoolFormDataWithBooleans) as import("@/lib/localDb").InstitutionRecord;
-    let effectiveId: string | null = null;
+      const latest =
+        schools && schools.length > 0
+          ? schools.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))[0]
+          : undefined;
 
-    if (latest) {
-      const latestNormalized = normalize(latest);
-      const isSame =
-        JSON.stringify(latestNormalized) === JSON.stringify(current);
+      const current = normalize(schoolFormDataWithBooleans) as import("@/lib/localDb").InstitutionRecord;
+      let effectiveId: string | null = null;
 
-      if (isSame) {
-        effectiveId = latest.id || null;
-      } else{
+      if (latest) {
+        const latestNormalized = normalize(latest);
+        const isSame =
+          JSON.stringify(latestNormalized) === JSON.stringify(current);
+
+        if (isSame) {
+          effectiveId = latest.id || null;
+        } else {
           const mergedInstitution: import("@/lib/localDb").InstitutionRecord = {
             ...latest,
             ...current,
-      };
-        await updateInstitutionInDB(mergedInstitution);
-        effectiveId = latest.id || null;
+          };
+          await updateInstitutionInDB(mergedInstitution);
+          effectiveId = latest.id || null;
+        }
+      } else {
+        const id = await addInstitutionToDB(current as import("@/lib/localDb").InstitutionRecord);
+        effectiveId = id;
+        console.warn("School saved locally with id:", id);
       }
-    } else {
-      const id = await addInstitutionToDB(current as import("@/lib/localDb").InstitutionRecord);
-      effectiveId = id;
-      console.log("School saved locally with id:", id);
+
+      if (typeof window !== "undefined" && effectiveId !== null) {
+        localStorage.setItem("institutionId", String(effectiveId));
+      }
+
+      const uploadResponse = await exportAndUploadInstitutionAndCourses();
+      console.warn("Upload response:", uploadResponse);
+
+      setDialogOpen(false);
+      setSchoolFormErrors({});
+      onSuccess?.();
+
+    } catch (error) {
+      console.error("Error saving school details:", error);
+      toast.error("Failed to save school details locally. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
-
-    if (typeof window !== "undefined" && effectiveId !== null) {
-      localStorage.setItem("institutionId", String(effectiveId));
-    }
-
-    const uploadResponse = await exportAndUploadInstitutionAndCourses();
-    console.log("Upload response:", uploadResponse);
-
-    setDialogOpen(false);
-    setSchoolFormErrors({});
-    onSuccess?.();
-    
-  } catch (error) {
-    console.error("Error saving school details:", error);
-    alert("Failed to save school details locally. Please try again.");
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   const handleCollegeFieldChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -513,13 +515,13 @@ const handleSchoolSubmit = async (e: FormEvent<HTMLFormElement>) => {
 
     setIsLoading(true);
 
-  try {
-    const collegeFormDataWithBooleans = {
-      ...collegeFormData,
-      hostelFacility: collegeFormData.hostelFacility === "Yes",
-      playground: collegeFormData.playground === "Yes",
-      busService: collegeFormData.busService === "Yes",
-    };
+    try {
+      const collegeFormDataWithBooleans = {
+        ...collegeFormData,
+        hostelFacility: collegeFormData.hostelFacility === "Yes",
+        playground: collegeFormData.playground === "Yes",
+        busService: collegeFormData.busService === "Yes",
+      };
 
       // 1) Load existing colleges from IndexedDB
       const colleges = await getAllInstitutionsFromDB?.(); // 🔑 need to implement in localDb.ts
@@ -527,10 +529,10 @@ const handleSchoolSubmit = async (e: FormEvent<HTMLFormElement>) => {
       // Normalize for comparison
       const normalize = (x: import("@/lib/localDb").InstitutionRecord | Record<string, unknown>) => ({
         collegeType: (x.collegeType as string) || "",
-        collegeCategory: (x.collegeCategory as string)|| "",
+        collegeCategory: (x.collegeCategory as string) || "",
         curriculumType: (x.curriculumType as string) || "",
         operationalDays: (x.operationalDays as string[]) || "",
-        otherActivities: ( x.otherActivities as string) || "",
+        otherActivities: (x.otherActivities as string) || "",
         hostelFacility: !!x.hostelFacility,
         playground: !!x.playground,
         busService: !!x.busService,
@@ -553,11 +555,11 @@ const handleSchoolSubmit = async (e: FormEvent<HTMLFormElement>) => {
           // ✅ unchanged → skip saving
           effectiveId = latest.id || null;
         }
-        else{
+        else {
           const mergedInstitution: import("@/lib/localDb").InstitutionRecord = {
             ...current,
             ...latest,
-        };
+          };
           await updateInstitutionInDB(mergedInstitution);
           effectiveId = latest.id || null;
         }
@@ -565,7 +567,7 @@ const handleSchoolSubmit = async (e: FormEvent<HTMLFormElement>) => {
         // ✅ insert new
         const id = await addInstitutionToDB(current as import("@/lib/localDb").InstitutionRecord);
         effectiveId = id;
-        console.log("College saved locally with id:", id);
+        console.warn("College saved locally with id:", id);
       }
 
       // 2) Save reference in localStorage (optional)
@@ -576,7 +578,7 @@ const handleSchoolSubmit = async (e: FormEvent<HTMLFormElement>) => {
       }
 
       const response = await exportAndUploadInstitutionAndCourses();
-      console.log("Upload response:", response);
+      console.warn("Upload response:", response);
 
       if (response.success) {
         // 3) Success → reset + redirect
@@ -597,270 +599,270 @@ const handleSchoolSubmit = async (e: FormEvent<HTMLFormElement>) => {
         router.push("/payment");
         onSuccess?.();
       } else {
-        alert(
+        toast.error(
           response.message ||
-            "Failed to save college details. Please try again."
+          "Failed to save college details. Please try again."
         );
       }
     } catch (error) {
       console.error("Error saving college details locally:", error);
-      alert("Failed to save college details locally. Please try again.");
+      toast.error("Failed to save college details locally. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleCoachingSubmit = async (e: FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
+    e.preventDefault();
 
     const errors = validateForm(CoachingSchema, coachingFormData as unknown as Record<string, unknown>);
-  setCoachingFormErrors(errors);
+    setCoachingFormErrors(errors);
 
-  if (errors && Object.keys(errors).length > 0) return;
+    if (errors && Object.keys(errors).length > 0) return;
 
-  setIsLoading(true);
+    setIsLoading(true);
 
-  try {
-    const coachingFormDataWithBooleans = {
-      ...coachingFormData,
-      placementDrives: coachingFormData.placementDrives === "Yes",
-      mockInterviews: coachingFormData.mockInterviews === "Yes",
-      resumeBuilding: coachingFormData.resumeBuilding === "Yes",
-      linkedinOptimization: coachingFormData.linkedinOptimization === "Yes",
-      exclusiveJobPortal: coachingFormData.exclusiveJobPortal === "Yes",
-      certification: coachingFormData.certification === "Yes",
-    };
+    try {
+      const coachingFormDataWithBooleans = {
+        ...coachingFormData,
+        placementDrives: coachingFormData.placementDrives === "Yes",
+        mockInterviews: coachingFormData.mockInterviews === "Yes",
+        resumeBuilding: coachingFormData.resumeBuilding === "Yes",
+        linkedinOptimization: coachingFormData.linkedinOptimization === "Yes",
+        exclusiveJobPortal: coachingFormData.exclusiveJobPortal === "Yes",
+        certification: coachingFormData.certification === "Yes",
+      };
 
-    const coachings = await getAllInstitutionsFromDB?.();
+      const coachings = await getAllInstitutionsFromDB?.();
 
-    const normalize = (x: import("@/lib/localDb").InstitutionRecord | Record<string, unknown>) => ({
-      placementDrives: !!x.placementDrives,
-      mockInterviews: !!x.mockInterviews,
-      resumeBuilding: !!x.resumeBuilding,
-      linkedinOptimization: !!x.linkedinOptimization,
-      exclusiveJobPortal: !!x.exclusiveJobPortal,
-      certification: !!x.certification,
-    });
+      const normalize = (x: import("@/lib/localDb").InstitutionRecord | Record<string, unknown>) => ({
+        placementDrives: !!x.placementDrives,
+        mockInterviews: !!x.mockInterviews,
+        resumeBuilding: !!x.resumeBuilding,
+        linkedinOptimization: !!x.linkedinOptimization,
+        exclusiveJobPortal: !!x.exclusiveJobPortal,
+        certification: !!x.certification,
+      });
 
-    const latest =
-      coachings && coachings.length > 0
-        ? coachings.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))[0]
-        : undefined;
+      const latest =
+        coachings && coachings.length > 0
+          ? coachings.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))[0]
+          : undefined;
 
-    const current = normalize(coachingFormDataWithBooleans);
-    let effectiveId: string | null = null;
+      const current = normalize(coachingFormDataWithBooleans);
+      let effectiveId: string | null = null;
 
-    if (latest) {
-      const latestNormalized = normalize(latest);
-      const isSame =
-        JSON.stringify(latestNormalized) === JSON.stringify(current);
+      if (latest) {
+        const latestNormalized = normalize(latest);
+        const isSame =
+          JSON.stringify(latestNormalized) === JSON.stringify(current);
 
-      if (isSame) {
-        effectiveId = latest.id || null;
-      } else{
+        if (isSame) {
+          effectiveId = latest.id || null;
+        } else {
           const mergedInstitution: import("@/lib/localDb").InstitutionRecord = {
             ...latest,
             ...current,
-        };
-        await updateInstitutionInDB(mergedInstitution);
-        effectiveId = latest.id || null;
+          };
+          await updateInstitutionInDB(mergedInstitution);
+          effectiveId = latest.id || null;
+        }
+      } else {
+        const id = await addInstitutionToDB(current as import("@/lib/localDb").InstitutionRecord);
+        effectiveId = id;
+        console.warn("Coaching center saved locally with id:", id);
       }
-    } else {
-      const id = await addInstitutionToDB(current as import("@/lib/localDb").InstitutionRecord);
-      effectiveId = id;
-      console.log("Coaching center saved locally with id:", id);
-    }
 
-    if (typeof window !== "undefined") {
-      if (effectiveId !== null) {
-        localStorage.setItem("coachingId", String(effectiveId));
+      if (typeof window !== "undefined") {
+        if (effectiveId !== null) {
+          localStorage.setItem("coachingId", String(effectiveId));
+        }
       }
+
+      const response = await exportAndUploadInstitutionAndCourses();
+      console.warn("Upload response:", response);
+
+      if (response.success) {
+        setDialogOpen(false);
+        setCoachingFormErrors({});
+        setCoachingFormData({
+          placementDrives: "",
+          mockInterviews: "",
+          resumeBuilding: "",
+          linkedinOptimization: "",
+          exclusiveJobPortal: "",
+          certification: "",
+        });
+
+        // ✅ Call the onSuccess callback and navigate to the payment page
+        onSuccess?.();
+        router.push("/payment");
+
+      } else {
+        toast.error(response?.message || "Failed to save coaching center details. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error saving coaching center details:", error);
+      toast.error("Failed to save coaching center details. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
-
-    const response = await exportAndUploadInstitutionAndCourses();
-    console.log("Upload response:", response);
-
-    if (response.success) {
-      setDialogOpen(false);
-      setCoachingFormErrors({});
-      setCoachingFormData({
-        placementDrives: "",
-        mockInterviews: "",
-        resumeBuilding: "",
-        linkedinOptimization: "",
-        exclusiveJobPortal: "",
-        certification: "",
-      });
-      
-      // ✅ Call the onSuccess callback and navigate to the payment page
-      onSuccess?.(); 
-      router.push("/payment");
-
-    } else {
-      alert(response?.message || "Failed to save coaching center details. Please try again.");
-    }
-  } catch (error) {
-    console.error("Error saving coaching center details:", error);
-    alert("Failed to save coaching center details. Please try again.");
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   const handleUndergraduateChange = (
-  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-) => {
-  const { name, value } = e.target;
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
 
-  // Update form data
-  setUndergraduateFormData((prev) => ({
-    ...prev,
-    [name]: value,
-  }));
+    // Update form data
+    setUndergraduateFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
 
-  // Validate the single field against the UndergraduateSchema
-  const fieldSchema = UndergraduateSchema.extract(name);
-  const { error } = fieldSchema.validate(value);
+    // Validate the single field against the UndergraduateSchema
+    const fieldSchema = UndergraduateSchema.extract(name);
+    const { error } = fieldSchema.validate(value);
 
-  // Update errors: clear if valid
-  setUndergraduateFormErrors((prev) => ({
-    ...prev,
-    [name]: error ? error.message : "",
-  }));
-};
+    // Update errors: clear if valid
+    setUndergraduateFormErrors((prev) => ({
+      ...prev,
+      [name]: error ? error.message : "",
+    }));
+  };
 
 
 
-const handleUndergraduateSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
+  const handleUndergraduateSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-  // 1. Validate the form data with Joi
-  const { error } = UndergraduateSchema.validate(undergraduateFormData, { abortEarly: false });
-  
-  if (error) {
-    // If there are errors, map them to the state and stop the submission
-    const errors: Record<string, string> = {};
-    error.details.forEach((detail) => {
-      const fieldName = detail.path[0] as string;
-      errors[fieldName] = detail.message;
-    });
-    setUndergraduateFormErrors(errors);
-    return; // Stop the function here
-  }
+    // 1. Validate the form data with Joi
+    const { error } = UndergraduateSchema.validate(undergraduateFormData, { abortEarly: false });
 
-  // If validation passes, clear any existing errors and proceed
-  setUndergraduateFormErrors({});
-  setIsLoading(true);
+    if (error) {
+      // If there are errors, map them to the state and stop the submission
+      const errors: Record<string, string> = {};
+      error.details.forEach((detail) => {
+        const fieldName = detail.path[0] as string;
+        errors[fieldName] = detail.message;
+      });
+      setUndergraduateFormErrors(errors);
+      return; // Stop the function here
+    }
 
-  try {
-    // 2. Normalize the "Yes"/"No" string values to booleans
-    const formDataWithBooleans = {
-      ...undergraduateFormData,
-      placementDrives: undergraduateFormData.placementDrives === "Yes",
-      mockInterviews: undergraduateFormData.mockInterviews === "Yes",
-      resumeBuilding: undergraduateFormData.resumeBuilding === "Yes",
-      linkedinOptimization: undergraduateFormData.linkedinOptimization === "Yes",
-      exclusiveJobPortal: undergraduateFormData.exclusiveJobPortal === "Yes",
-      library: undergraduateFormData.library === "Yes",
-      hostelFacility: undergraduateFormData.hostelFacility === "Yes",
-      entranceExam: undergraduateFormData.entranceExam === "Yes",
-      managementQuota: undergraduateFormData.managementQuota === "Yes",
-      playground: undergraduateFormData.playground === "Yes",
-      busService: undergraduateFormData.busService === "Yes",
-    };
-    
-    // 3. Prepare a function to normalize data for DB comparison
-    const normalize = (data: import("@/lib/localDb").InstitutionRecord | Record<string, unknown>) => ({
-      ownershipType: data.ownershipType || "",
-      collegeCategory: data.collegeCategory || "",
-      affiliationType: data.affiliationType || "",
-      placementDrives: !!data.placementDrives,
-      mockInterviews: !!data.mockInterviews,
-      resumeBuilding: !!data.resumeBuilding,
-      linkedinOptimization: !!data.linkedinOptimization,
-      exclusiveJobPortal: !!data.exclusiveJobPortal,
-      library: !!data.library,
-      hostelFacility: !!data.hostelFacility,
-      entranceExam: !!data.entranceExam,
-      managementQuota: !!data.managementQuota,
-      playground: !!data.playground,
-      busService: !!data.busService,
-    });
-    
-    const currentData = normalize(formDataWithBooleans) as import("@/lib/localDb").InstitutionRecord;
-    let effectiveId: string | null = null;
-    
-    // 4. Load existing data and decide whether to update or add a new entry
-    const institutions = await getAllInstitutionsFromDB();
-    const latestInstitution = (institutions && institutions.length > 0)
-      ? institutions.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))[0]
-      : undefined;
+    // If validation passes, clear any existing errors and proceed
+    setUndergraduateFormErrors({});
+    setIsLoading(true);
 
-    if (latestInstitution) {
-      const latestNormalized = normalize(latestInstitution);
-      const isSame = JSON.stringify(latestNormalized) === JSON.stringify(currentData);
+    try {
+      // 2. Normalize the "Yes"/"No" string values to booleans
+      const formDataWithBooleans = {
+        ...undergraduateFormData,
+        placementDrives: undergraduateFormData.placementDrives === "Yes",
+        mockInterviews: undergraduateFormData.mockInterviews === "Yes",
+        resumeBuilding: undergraduateFormData.resumeBuilding === "Yes",
+        linkedinOptimization: undergraduateFormData.linkedinOptimization === "Yes",
+        exclusiveJobPortal: undergraduateFormData.exclusiveJobPortal === "Yes",
+        library: undergraduateFormData.library === "Yes",
+        hostelFacility: undergraduateFormData.hostelFacility === "Yes",
+        entranceExam: undergraduateFormData.entranceExam === "Yes",
+        managementQuota: undergraduateFormData.managementQuota === "Yes",
+        playground: undergraduateFormData.playground === "Yes",
+        busService: undergraduateFormData.busService === "Yes",
+      };
 
-      if (isSame) {
-        effectiveId = latestInstitution.id || null;
-      } else{
-        const mergerdInstitution: import("@/lib/localDb").InstitutionRecord = {
-          ...latestInstitution,
-          ...currentData,
+      // 3. Prepare a function to normalize data for DB comparison
+      const normalize = (data: import("@/lib/localDb").InstitutionRecord | Record<string, unknown>) => ({
+        ownershipType: data.ownershipType || "",
+        collegeCategory: data.collegeCategory || "",
+        affiliationType: data.affiliationType || "",
+        placementDrives: !!data.placementDrives,
+        mockInterviews: !!data.mockInterviews,
+        resumeBuilding: !!data.resumeBuilding,
+        linkedinOptimization: !!data.linkedinOptimization,
+        exclusiveJobPortal: !!data.exclusiveJobPortal,
+        library: !!data.library,
+        hostelFacility: !!data.hostelFacility,
+        entranceExam: !!data.entranceExam,
+        managementQuota: !!data.managementQuota,
+        playground: !!data.playground,
+        busService: !!data.busService,
+      });
+
+      const currentData = normalize(formDataWithBooleans) as import("@/lib/localDb").InstitutionRecord;
+      let effectiveId: string | null = null;
+
+      // 4. Load existing data and decide whether to update or add a new entry
+      const institutions = await getAllInstitutionsFromDB();
+      const latestInstitution = (institutions && institutions.length > 0)
+        ? institutions.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))[0]
+        : undefined;
+
+      if (latestInstitution) {
+        const latestNormalized = normalize(latestInstitution);
+        const isSame = JSON.stringify(latestNormalized) === JSON.stringify(currentData);
+
+        if (isSame) {
+          effectiveId = latestInstitution.id || null;
+        } else {
+          const mergerdInstitution: import("@/lib/localDb").InstitutionRecord = {
+            ...latestInstitution,
+            ...currentData,
+          }
+
+          await updateInstitutionInDB(mergerdInstitution);
+          effectiveId = latestInstitution.id || null;
         }
-
-        await updateInstitutionInDB(mergerdInstitution);
-        effectiveId = latestInstitution.id || null;
+      } else {
+        const newId = await addInstitutionToDB({
+          ...(currentData as import("@/lib/localDb").InstitutionRecord),
+          createdAt: Date.now(),
+        });
+        effectiveId = newId;
+        console.warn("Undergraduate details saved locally with id:", newId);
       }
-    } else {
-      const newId = await addInstitutionToDB({
-        ...(currentData as import("@/lib/localDb").InstitutionRecord),
-        createdAt: Date.now(),
-      });
-      effectiveId = newId;
-      console.log("Undergraduate details saved locally with id:", newId);
-    }
-    
-    // 5. Save reference to localStorage and upload the data
-    if (typeof window !== "undefined" && effectiveId !== null) {
-      localStorage.setItem("institutionId", String(effectiveId));
-    }
-    
-    const response = await exportAndUploadInstitutionAndCourses();
-    console.log("Upload response:", response);
 
-    if (response.success) {
-      // 6. On successful upload, reset the form and redirect
-      setDialogOpen(false);
-      onSuccess?.();
+      // 5. Save reference to localStorage and upload the data
+      if (typeof window !== "undefined" && effectiveId !== null) {
+        localStorage.setItem("institutionId", String(effectiveId));
+      }
 
-      setUndergraduateFormData({ // Reset form to initial state
-        ownershipType: "",
-        collegeCategory: "",
-        affiliationType: "",
-        placementDrives: "",
-        mockInterviews: "",
-        resumeBuilding: "",
-        linkedinOptimization: "",
-        exclusiveJobPortal: "",
-        library: "",
-        hostelFacility: "",
-        entranceExam: "",
-        managementQuota: "",
-        playground: "",
-        busService: "",
-      });
+      const response = await exportAndUploadInstitutionAndCourses();
+      console.warn("Upload response:", response);
 
-      router.push("/payment");
-    } else {
-      alert(response.message || "Failed to save undergraduate details.");
+      if (response.success) {
+        // 6. On successful upload, reset the form and redirect
+        setDialogOpen(false);
+        onSuccess?.();
+
+        setUndergraduateFormData({ // Reset form to initial state
+          ownershipType: "",
+          collegeCategory: "",
+          affiliationType: "",
+          placementDrives: "",
+          mockInterviews: "",
+          resumeBuilding: "",
+          linkedinOptimization: "",
+          exclusiveJobPortal: "",
+          library: "",
+          hostelFacility: "",
+          entranceExam: "",
+          managementQuota: "",
+          playground: "",
+          busService: "",
+        });
+
+        router.push("/payment");
+      } else {
+        toast.error(response.message || "Failed to save undergraduate details.");
+      }
+    } catch (err) {
+      console.error("Error saving undergraduate details:", err);
+      toast.error("Failed to save undergraduate details locally. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
-  } catch (err) {
-    console.error("Error saving undergraduate details:", err);
-    alert("Failed to save undergraduate details locally. Please try again.");
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
 
   // Use the same handler for radios
@@ -942,8 +944,8 @@ const handleUndergraduateSubmit = async (e: React.FormEvent<HTMLFormElement>) =>
       const latest =
         institutions && institutions.length > 0
           ? institutions.sort(
-              (a, b) => (b.createdAt || 0) - (a.createdAt || 0)
-            )[0]
+            (a, b) => (b.createdAt || 0) - (a.createdAt || 0)
+          )[0]
           : null;
 
       // Normalize for comparison
@@ -958,7 +960,7 @@ const handleUndergraduateSubmit = async (e: React.FormEvent<HTMLFormElement>) =>
         outdoorPlayArea: (x.outdoorPlayArea as string) || "",
       });
 
-      const current = normalize(formDataWithBooleans) as import("@/lib/localDb").InstitutionRecord ;
+      const current = normalize(formDataWithBooleans) as import("@/lib/localDb").InstitutionRecord;
       let effectiveId: string | null = null;
 
       if (latest) {
@@ -968,7 +970,7 @@ const handleUndergraduateSubmit = async (e: React.FormEvent<HTMLFormElement>) =>
 
         if (isSame) {
           effectiveId = latest.id || null; // no changes
-        } else{
+        } else {
           const mergerdInstitution: import("@/lib/localDb").InstitutionRecord = {
             ...latest,
             ...current,
@@ -984,7 +986,7 @@ const handleUndergraduateSubmit = async (e: React.FormEvent<HTMLFormElement>) =>
           createdAt: Date.now(),
         });
         effectiveId = id;
-        console.log("Kindergarten saved locally with id:", id);
+        console.warn("Kindergarten saved locally with id:", id);
       }
 
       // 2) Save reference in localStorage
@@ -994,7 +996,7 @@ const handleUndergraduateSubmit = async (e: React.FormEvent<HTMLFormElement>) =>
 
       // 3) Export + upload
       const response = await exportAndUploadInstitutionAndCourses();
-      console.log("Upload response:", response);
+      console.warn("Upload response:", response);
 
       if (response.success) {
         // ✅ success → reset and redirect
@@ -1014,11 +1016,11 @@ const handleUndergraduateSubmit = async (e: React.FormEvent<HTMLFormElement>) =>
 
         router.push("/payment");
       } else {
-        alert(response.message || "Failed to save kindergarten details.");
+        toast.error(response.message || "Failed to save kindergarten details.");
       }
     } catch (error) {
       console.error("Error saving kindergarten details:", error);
-      alert("Failed to save kindergarten details locally. Please try again.");
+      toast.error("Failed to save kindergarten details locally. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -1028,13 +1030,13 @@ const handleUndergraduateSubmit = async (e: React.FormEvent<HTMLFormElement>) =>
     e.preventDefault();
     const errors = validateForm(StudyAbroadSchema, studyAbroadFormData);
     if (Object.keys(errors).length > 0) {
-      setStudyAbroadFormErrors(errors as any);
+      setStudyAbroadFormErrors(errors);
       return;
     }
     setIsLoading(true);
     try {
-      // Normalize Yes/No → booleans
-      const normalized = {
+      // Normalize Yes/No → booleans (L3 data)
+      const l3Data = {
         applicationAssistance: studyAbroadFormData.applicationAssistance === "Yes",
         visaProcessingSupport: studyAbroadFormData.visaProcessingSupport === "Yes",
         testOperation: studyAbroadFormData.testOperation === "Yes",
@@ -1044,6 +1046,29 @@ const handleUndergraduateSubmit = async (e: React.FormEvent<HTMLFormElement>) =>
         postArrivalSupport: studyAbroadFormData.postArrivalSupport === "Yes",
       };
 
+      // ✅ Get L2 course data from IndexedDB
+      const coursesGroups = await getCoursesGroupsByBranchName();
+      let l2CourseData = {};
+
+      if (coursesGroups && coursesGroups.length > 0) {
+        // Get the first course (Study Abroad should only have one)
+        const firstGroup = coursesGroups[0];
+        if (firstGroup.courses && firstGroup.courses.length > 0) {
+          const course = firstGroup.courses[0];
+
+          // ✅ Map frontend field names to backend field names
+          l2CourseData = {
+            consultancyName: course.consultancyName || "",
+            totalAdmissions: parseInt(String(course.studentAdmissions || "0")) || 0,
+            // ✅ Split comma-separated string into array for backend
+            countries: course.countriesOffered
+              ? (course.countriesOffered as string).split(",").map(c => c.trim()).filter(Boolean)
+              : [],
+            academicOfferings: course.academicOfferings ? [course.academicOfferings] : [],
+          };
+        }
+      }
+
       // Save to IndexedDB (merge into latest record)
       const institutions = await getAllInstitutionsFromDB();
       const latest = institutions && institutions.length > 0
@@ -1052,13 +1077,18 @@ const handleUndergraduateSubmit = async (e: React.FormEvent<HTMLFormElement>) =>
 
       if (latest) {
         await updateInstitutionInDB({
-          ...(latest as any),
-          ...normalized,
+          ...latest,
+          ...l3Data,
+          ...l2CourseData,
           id: latest.id,
-          updatedAt: Date.now(),
         });
+        console.warn("✅ Institution (id: " + latest.id + ") updated successfully");
       } else {
-        await addInstitutionToDB({ ...(normalized as any) } as any);
+        await addInstitutionToDB({
+          ...l3Data,
+          ...l2CourseData,
+          createdAt: Date.now(),
+        } as import("@/lib/localDb").InstitutionRecord);
       }
 
       // Export and upload to backend like other flows
@@ -1067,7 +1097,9 @@ const handleUndergraduateSubmit = async (e: React.FormEvent<HTMLFormElement>) =>
         onSuccess?.();
         router.push("/payment");
       } else {
-        alert(response?.message || "Failed to save Study Abroad details. Please try again.");
+        // Log the full error for debugging
+        console.error("❌ FAILED: L3 Validation.", response.message);
+        toast.error(response?.message || "Failed to save Study Abroad details. Please try again.");
       }
     } finally {
       setIsLoading(false);
@@ -1099,7 +1131,7 @@ const handleUndergraduateSubmit = async (e: React.FormEvent<HTMLFormElement>) =>
                 operationalDaysOptions={operationalDaysOptions}
                 handleSubmit={handleSubmit as unknown as (e: React.FormEvent<Element>) => void}
                 isLoading={isLoading}
-                onPrevious={onPrevious || (() => {})}
+                onPrevious={onPrevious || (() => { })}
               />
             )}
 
@@ -1113,10 +1145,10 @@ const handleUndergraduateSubmit = async (e: React.FormEvent<HTMLFormElement>) =>
                 operationalDaysOptions={operationalDaysOptions}
                 handleSchoolSubmit={handleSchoolSubmit}
                 isLoading={isLoading}
-                onPrevious={onPrevious || (() => {})}
+                onPrevious={onPrevious || (() => { })}
               />
             )}
-            
+
             {isCoaching && (
               <CoachingForm
                 coachingFormData={coachingFormData}
@@ -1124,7 +1156,7 @@ const handleUndergraduateSubmit = async (e: React.FormEvent<HTMLFormElement>) =>
                 handleCoachingFieldChange={handleCoachingFieldChange}
                 handleCoachingSubmit={handleCoachingSubmit}
                 isLoading={isLoading}
-                onPrevious={onPrevious || (() => {})}
+                onPrevious={onPrevious || (() => { })}
               />
             )}
 
@@ -1140,7 +1172,7 @@ const handleUndergraduateSubmit = async (e: React.FormEvent<HTMLFormElement>) =>
             )}
 
             {isIntermediate && (
-               <CollegeForm
+              <CollegeForm
                 collegeFormData={collegeFormData}
                 collegeFormErrors={collegeFormErrors}
                 handleCollegeFieldChange={handleCollegeFieldChange}
@@ -1149,7 +1181,7 @@ const handleUndergraduateSubmit = async (e: React.FormEvent<HTMLFormElement>) =>
                 operationalDaysOptions={operationalDaysOptions}
                 handleCollegeSubmit={handleCollegeSubmit}
                 isLoading={isLoading}
-                onPrevious={onPrevious || (() => {})}
+                onPrevious={onPrevious || (() => { })}
               />
             )}
 
@@ -1161,10 +1193,10 @@ const handleUndergraduateSubmit = async (e: React.FormEvent<HTMLFormElement>) =>
                 handleUndergraduateRadioChange={handleUndergraduateRadioChange}
                 handleUndergraduateSubmit={handleUndergraduateSubmit}
                 isLoading={isLoading}
-                onPrevious={onPrevious || (() => {})}
+                onPrevious={onPrevious || (() => { })}
               />
             )}
-            
+
           </_CardContent>
         </_Card>
       </_DialogContent>

@@ -34,17 +34,25 @@ router.put(
     body("birthday")
       .optional()
       .custom((value) => {
-        // Allow both MM/DD/YYYY and YYYY-MM-DD
-        const parsedDate = new Date(value);
-        if (isNaN(parsedDate.getTime())) {
-          throw new Error(
-            "Birthday must be a valid date (MM/DD/YYYY or YYYY-MM-DD)."
-          );
+        // Check DD/MM/YYYY format
+        const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+        if (!regex.test(value)) {
+          throw new Error("Birthday must be in DD/MM/YYYY format.");
         }
-        const now = new Date();
-        if (parsedDate > now) {
+
+        const [day, month, year] = value.split("/").map(Number);
+
+        // Validate calendar date
+        const parsed = new Date(Date.UTC(year, month - 1, day));
+        if (isNaN(parsed.getTime())) {
+          throw new Error("Birthday must be a valid date.");
+        }
+
+        // Check future date
+        if (parsed > new Date()) {
           throw new Error("Birthday cannot be in the future.");
         }
+
         return true;
       }),
 

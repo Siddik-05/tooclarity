@@ -43,10 +43,14 @@ export type CourseRecord = {
   hallName?: string;
   consultancyName?: string;
   studentAdmissions?: number;
-  countriesOffered?:string;
+  countriesOffered?: string;
   academicOfferings?: string;
   state?: string;
   district?: string;
+  businessProofPreviewUrl?: string;
+  businessProofUrl?: string;
+  panAadhaarUrl?: string;
+  panAadhaarPreviewUrl?: string;
 };
 
 export type BranchCoursesRecord = {
@@ -54,6 +58,7 @@ export type BranchCoursesRecord = {
   branchName?: string; // undefined/null => unassigned
   branchAddress?: string;
   contactInfo?: string;
+  contactCountryCode?: string;
   locationUrl?: string;
   courses: CourseRecord[];
   createdAt?: number;
@@ -64,6 +69,7 @@ export type BranchRecord = {
   branchName: string;
   branchAddress: string;
   contactInfo: string;
+  contactCountryCode?: string;
   locationUrl: string;
   courses?: CourseRecord[];
   createdAt?: number;
@@ -377,7 +383,7 @@ export async function addBranchesToDB(
     const ids: number[] = [];
 
     branches.forEach((b) => {
-      const {...rest } = b;
+      const { ...rest } = b;
       const record = { ...rest, createdAt: Date.now() };
 
       const req = store.add(record);
@@ -402,7 +408,7 @@ export async function addCoursesGroupToDB(
     const tx = db.transaction(COURSES_STORE, "readwrite");
     const store = tx.objectStore(COURSES_STORE);
 
-    const {...rest } = group;
+    const { ...rest } = group;
     const record = { ...rest, createdAt: Date.now() };
 
     const req = store.add(record);
@@ -496,7 +502,7 @@ export async function addInstitutionToDB(
     const tx = db.transaction(INSTITUTION_STORE, "readwrite");
     const store = tx.objectStore(INSTITUTION_STORE);
 
-    const {...rest } = institution;
+    const { ...rest } = institution;
     const record = { ...rest, createdAt: Date.now() };
 
     const req = store.add(record);

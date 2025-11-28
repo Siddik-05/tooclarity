@@ -169,6 +169,7 @@ export interface PaymentInitPayload {
   amount: number; // Payable amount in INR
   planType?: string; // e.g., "yearly" | "monthly"
   couponCode?: string | null;
+  courseIds?: string[];
   // institutionId: string;
 }
 
@@ -1022,6 +1023,19 @@ export const programsAPI = {
     // Placeholder: hook to your backend PDF endpoint if implemented
     const res = await apiRequest(`/v1/payment/invoice/${encodeURIComponent(subscriptionId)}`, { method: 'GET' });
     return res as unknown as Blob;
+  },
+  invalidateCache: (institutionId?: string): void => {
+    if (!programsCache.size) return;
+    if (!institutionId) {
+      programsCache.clear();
+      return;
+    }
+    const keys = Array.from(programsCache.keys());
+    keys.forEach((key) => {
+      if (key.includes(institutionId)) {
+        programsCache.delete(key);
+      }
+    });
   }
 };
 

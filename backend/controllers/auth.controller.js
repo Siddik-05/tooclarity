@@ -613,19 +613,76 @@ exports.resendOtp = async (req, res, next) => {
 exports.updatePhoneNumber = async (req, res, next) => {
   try {
     const userId = req.userId;
-    const { contactNumber } = req.body;
+    const { contactNumber, email, userName } = req.body;
 
-    if (!contactNumber) {
+    if (!contactNumber && !email) {
       return res.status(400).json({
         status: "fail",
-        message: "Phone number cannot be empty",
+        message: "Phone number or email cannot be empty",
       });
+    }
+
+    // Prepare update data based on what's provided
+    const updateData = {};
+    let updateType = '';
+    let otpRecipient = '';
+    let successMessage = '';
+
+    if (contactNumber) {
+      updateData.contactNumber = contactNumber;
+      updateData.isPhoneVerified = false;
+      updateType = 'contactNumber';
+      otpRecipient = contactNumber;
+      successMessage = "Phone number updated successfully";
+    } else if (email) {
+      updateData.email = email;
+      updateData.isEmailVerified = false;
+      updateType = 'email';
+      otpRecipient = email;
+      successMessage = "Email updated successfully";
+    }
+
+    // Get original user data for rollback if needed
+    const originalUser = await InstituteAdmin.findById(userId);
+
+    if (!originalUser) {
+      return res.status(404).json({
+        status: "fail",
+        message: "User not found",
+      });
+    }
+
+    // Check if the new contact number or email is already used by another user
+    if (contactNumber) {
+      const existingUserWithPhone = await InstituteAdmin.findOne({
+        contactNumber: contactNumber,
+        _id: { $ne: userId } // Exclude current user
+      });
+
+      if (existingUserWithPhone) {
+        return res.status(409).json({
+          status: "fail",
+          message: "Contact number is already use",
+        });
+      }
+    } else if (email) {
+      const existingUserWithEmail = await InstituteAdmin.findOne({
+        email: email,
+        _id: { $ne: userId } // Exclude current user
+      });
+
+      if (existingUserWithEmail) {
+        return res.status(409).json({
+          status: "fail",
+          message: "Email is already in Use",
+        });
+      }
     }
 
     // Update user and return the updated document
     const updatedUser = await InstituteAdmin.findByIdAndUpdate(
       userId,
-      { contactNumber, isPhoneVerified: false },
+      updateData,
       { new: true } // returns updated document
     );
 
@@ -636,11 +693,31 @@ exports.updatePhoneNumber = async (req, res, next) => {
       });
     }
 
-    await otpService.sendVerificationTokenSMS(contactNumber);
+    // Send OTP based on update type with error handling
+    try {
+      if (contactNumber) {
+        await otpService.sendVerificationTokenSMS(contactNumber);
+      } else if (email) {
+        await otpService.sendVerificationToken(email, userName || updatedUser.name);
+      }
+    } catch (otpError) {
+      // Revert database changes if OTP sending fails
+      const revertData = {};
+      if (contactNumber) {
+        revertData.contactNumber = originalUser.contactNumber;
+        revertData.isPhoneVerified = originalUser.isPhoneVerified;
+      } else if (email) {
+        revertData.email = originalUser.email;
+        revertData.isEmailVerified = originalUser.isEmailVerified;
+      }
+
+      await InstituteAdmin.findByIdAndUpdate(userId, revertData);
+      throw otpError; // Re-throw the OTP error
+    }
 
     return res.status(200).json({
       status: "success",
-      message: "Phone number updated successfully",
+      message: successMessage,
       data: updatedUser,
     });
   } catch (error) {

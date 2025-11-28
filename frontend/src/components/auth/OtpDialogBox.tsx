@@ -37,6 +37,8 @@ export default function Otp_DialogBox({
   const [timer, setTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const { refreshUser } = useAuth();
+  const isPhoneVerification = Boolean(phoneNumber);
+  const targetIdentifier = phoneNumber || email || "";
 
   const router = useRouter();
   // Timer countdown
@@ -192,7 +194,11 @@ export default function Otp_DialogBox({
       if (response.success) {
         if (fromStudent) {
           // STUDENT SIDE FLOW
-          toast.success("Phone verified successfully!");
+          toast.success(
+            isPhoneVerification
+              ? "Phone verified successfully!"
+              : "Email verified successfully!"
+          );
           setOpen(false);
           await refreshUser();
           return;
@@ -218,8 +224,18 @@ export default function Otp_DialogBox({
     setResendLoading(true);
     setError("");
 
+    if (!targetIdentifier) {
+      setError("No contact information available for resending OTP.");
+      setResendLoading(false);
+      return;
+    }
+
     try {
-      const response = await authAPI.resendOTP({ email: email });
+      const response = await authAPI.resendOTP(
+        isPhoneVerification
+          ? { contactNumber: phoneNumber }
+          : { email: email as string }
+      );
 
       if (response.success) {
         setTimer(60);
@@ -248,10 +264,12 @@ export default function Otp_DialogBox({
       >
         <_DialogHeader className="flex flex-col items-center gap-2">
           <_DialogTitle className="max-w-xs font-montserrat font-bold text-xl sm:text-[24px] leading-tight text-center">
-            Verify Your Email
+            Verify Your {isPhoneVerification ? "Phone" : "Email"}
           </_DialogTitle>
           <_DialogDescription className="max-w-xs font-montserrat font-normal text-sm sm:text-[14px] leading-relaxed text-center">
-            We&apos;ve sent a 6-digit code to {email}
+            {targetIdentifier
+              ? `We've sent a 6-digit code to ${targetIdentifier}`
+              : "Enter the 6-digit code you received."}
           </_DialogDescription>
         </_DialogHeader>
 

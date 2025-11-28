@@ -68,7 +68,7 @@ function ProgramsPage() {
   const [, setPaymentProcessing] = useState<{ paymentId?: string | null; orderId?: string | null } | null>(null);
   const [, setPaymentVerified] = useState<{ transactionId?: string | null; paymentId?: string | null; orderId?: string | null } | null>(null);
   const [, setPaymentFailed] = useState<{ paymentId?: string | null; orderId?: string | null } | null>(null);
-  const selectedPlan: "yearly" = "yearly";
+  const selectedPlan = "yearly" as const;
   const appliedCoupon: string | null = null;
   // Add/Branch forms are delegated to L2DialogBox for reuse across the app
 

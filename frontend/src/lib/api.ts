@@ -273,10 +273,14 @@ export const authAPI = {
     });
   },
 
-  verifyContactNumber: async (contactNumber: string): Promise<ApiResponse> => {
+  verifyContactNumberAndEmail: async (payload: {
+    contactNumber?: string;
+    email?: string;
+    userName?: string;
+  }): Promise<ApiResponse> => {
     return apiRequest("/v1/auth/verify-contact-number", {
       method: "PUT",
-      body: JSON.stringify({ contactNumber }),
+      body: JSON.stringify(payload),
     });
   },
 

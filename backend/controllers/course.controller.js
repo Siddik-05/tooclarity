@@ -5,13 +5,11 @@ const AppError = require("../utils/appError");
 const asyncHandler = require("express-async-handler");
 const { uploadStream } = require("../services/upload.service");
 const RedisUtil = require("../utils/redis.util");
-const { addAnalyticsJob } = require("../jobs/analytics.job");
 const mongoose = require("mongoose");
 const Subscription = require("../models/Subscription");
 const { esClient } = require("../config/elasticsearch");
 const UserStats = require("../models/userStats");
 const Enquiries = require("../models/Enquiries");
-const Wishlist = require("../models/wishlist");
 const ObjectId = mongoose.Types.ObjectId;
 
 // Generic helpers
@@ -364,35 +362,29 @@ exports.getCourseById = asyncHandler(async (req, res) => {
   console.log(`📘 [getCourseById] Request received for Course ID: ${courseId}`);
 
   try {
-    // Unique cache key (course + user)
-    const Key = courseId + userId;
+    const CACHE_KEY = `course:${courseId}`;
 
-    // 1️⃣ TRY CACHE FIRST
-    const cached = await RedisUtil.getCachedCourses(Key);
+    // 1️⃣ CHECK GLOBAL CACHE
+    const cached = await RedisUtil.getCachedCourses(CACHE_KEY);
 
     if (cached) {
-      console.log("✅ Cache hit for course");
+      console.log("✅ Global cache hit");
       const parsed = JSON.parse(cached);
 
-      // Add analytics if needed
-      if (userId) {
-        await addAnalyticsJob({
-          userId,
-          institutionId: parsed.course?.institution,
-          courseId,
-          timestamp: new Date().toISOString(),
-        });
+      // 🔥 UNIQUE VIEW TRACKING (Redis SET)
+      if (userId && parsed.course?.institution) {
+        await RedisUtil.trackUniqueCourseViewOrImpression("viewCourse",courseId, parsed.course.institution, userId);
       }
 
       return res.status(200).json({
         success: true,
-        data: parsed, // already in correct format
+        data: parsed,
       });
     }
 
+    // 2️⃣ RUN FULL AGGREGATION (from DB)
     console.log("⚙️ No cache — running full aggregation");
 
-    // 2️⃣ FULL AGGREGATION
     const courseData = await Course.aggregate([
       {
         $match: {
@@ -401,7 +393,7 @@ exports.getCourseById = asyncHandler(async (req, res) => {
         },
       },
 
-      // Join full institution document
+      // Join institution
       {
         $lookup: {
           from: "institutions",
@@ -411,46 +403,9 @@ exports.getCourseById = asyncHandler(async (req, res) => {
         },
       },
       { $unwind: "$institution" },
-
-      // Join wishlist
-      {
-        $lookup: {
-          from: "wishlists",
-          let: {
-            courseId: "$_id",
-            userId: new mongoose.Types.ObjectId(userId),
-          },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ["$courseId", "$$courseId"] },
-                    { $eq: ["$userId", "$$userId"] },
-                  ],
-                },
-              },
-            },
-          ],
-          as: "wishlistEntry",
-        },
-      },
-
-      // Compute wishlist boolean
-      {
-        $addFields: {
-          isWishlisted: { $gt: [{ $size: "$wishlistEntry" }, 0] },
-        },
-      },
-
-      {
-        $project: {
-          wishlistEntry: 0,
-        },
-      },
     ]);
 
-    if (!courseData || courseData.length === 0) {
+    if (!courseData.length) {
       return res.status(404).json({
         success: true,
         message: "Course not found or inactive",
@@ -460,41 +415,35 @@ exports.getCourseById = asyncHandler(async (req, res) => {
 
     const raw = courseData[0];
 
-    // STRUCTURE FINAL RESPONSE
-
+    // Prepare the final response
     const finalResponse = {
       course: {
         ...raw,
-        institution: raw.institution?._id, // course.institution = institutionId
+        institution: raw.institution?._id, // store only ID inside course
       },
       institution: raw.institution
         ? (() => {
-            const { _id, ...rest } = raw.institution; // exclude _id
-            return { id: _id, ...rest }; // add id instead
+            const { _id, ...rest } = raw.institution;
+            return { id: _id, ...rest };
           })()
         : null,
-      isWishlist: raw.isWishlisted,
     };
 
-    // 4️⃣ CACHE full structured response
-    await RedisUtil.cacheCourse(Key, finalResponse, 600);
+    // 3️⃣ CACHE THE GLOBAL COURSE
+    await RedisUtil.cacheCourse(CACHE_KEY, finalResponse, 600);
+    console.log("🟢 Cached globally:", CACHE_KEY);
 
-    // 5️⃣ Add analytics
+    // 4️⃣ UNIQUE VIEW TRACKING
     if (userId && raw.institution?._id) {
-      await addAnalyticsJob({
-        userId,
-        institutionId: raw.institution._id,
-        courseId,
-        timestamp: new Date().toISOString(),
-      });
+      await RedisUtil.trackUniqueCourseViewOrImpression("viewCourse",courseId, raw.institution._id, userId);
     }
 
-    console.log("✅ Returning fresh DB result");
-
+    console.log("✅ Returning fresh DB data");
     return res.status(200).json({
       success: true,
       data: finalResponse,
     });
+
   } catch (error) {
     console.error("❌ getCourseById Error:", error);
     return res.status(500).json({
@@ -1068,6 +1017,17 @@ exports.searchCourses = asyncHandler(async (req, res) => {
     .map((id) => mongoResults.find((course) => course._id.toString() === id))
     .filter(Boolean);
 
+  if (userId) {
+    for (const course of orderedResults) {
+      RedisUtil.trackUniqueCourseViewOrImpression(
+        "leadImpression",
+        course._id.toString(),
+        course.institutionDetails._id.toString(),
+        userId
+      );
+    }
+  }
+
   // 🧾 Send response
   res.status(200).json({
     success: true,
@@ -1284,13 +1244,14 @@ async function runAggregation(courseCond, instCond, userId) {
 /* -------------------------------------------------------------------------- */
 
 exports.filterCourses = async (req, res) => {
+  const userId = req.userId;
+  
   try {
     let filters = {
       ...(req.body || {}),
       ...(req.query || {}),
     };
 
-    // Normalize filter values → always arrays
     for (const key of Object.keys(filters)) {
       let value = filters[key];
 
@@ -1315,19 +1276,30 @@ exports.filterCourses = async (req, res) => {
 
     const { courseCond, instCond } = buildConditionsFromFilters(filters);
 
-    let results = await runAggregation(courseCond, instCond, req.userId);
+    const results = await runAggregation(courseCond, instCond, userId);
 
-    if (results.length > 0) {
-      return res.status(200).json({
-        success: true,
-        data: results,
-        appliedFilters: filters,
+    if (!results.length) {
+      return res.status(404).json({
+        success: false,
+        message: "No course found",
       });
     }
 
-    return res.status(404).json({
-      success: false,
-      message: "No course found",
+    if (userId) {
+      for (const course of results) {
+        RedisUtil.trackUniqueCourseViewOrImpression(
+          "leadImpression",
+          course._id.toString(),
+          course.institutionDetails._id.toString(),
+          userId
+        );
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: results,
+      appliedFilters: filters,
     });
   } catch (err) {
     console.error("filterCourses error", err);

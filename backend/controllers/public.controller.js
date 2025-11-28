@@ -1,7 +1,7 @@
 const Course = require("../models/Course");
 const asyncHandler = require("express-async-handler");
-const mongoose = require('mongoose');
-
+const mongoose = require("mongoose");
+const RedisUtil = require("../utils/redis.util");
 
 exports.getAllVisibleCourses = asyncHandler(async (req, res, next) => {
   try {
@@ -75,6 +75,21 @@ exports.getAllVisibleCourses = asyncHandler(async (req, res, next) => {
         },
       },
     ]);
+
+    const impressionItems = courses.map((course) => ({
+      courseId: course._id,
+      institutionId: course.institutionDetails._id,
+    }));
+
+    // Track impressions for each course
+    impressionItems.forEach((item) => {
+      RedisUtil.trackUniqueCourseViewOrImpression(
+        "leadImpression",
+        item.courseId,
+        item.institutionId,
+        rawUserId
+      );
+    });
 
     res.status(200).json({ success: true, data: courses });
   } catch (error) {

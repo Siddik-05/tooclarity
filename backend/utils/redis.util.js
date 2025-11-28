@@ -111,15 +111,6 @@ class RedisUtil {
     }
   }
 
-  // static async getLock(key, ttlSeconds = 5) {
-  //   const result = await redis.set(key, "1", "NX", "EX", ttlSeconds);
-  //   return result === "OK";
-  // }
-
-  // static async releaseLock(key) {
-  //   await redis.del(key);
-  // }
-
   static async getLock(key, ttlSeconds = 5) {
     if (!key) throw new Error("RedisLockUtil.getLock: key is required");
 
@@ -159,17 +150,35 @@ class RedisUtil {
 
   static async cacheCourse(courseId, courseData, ttlSeconds = 600) {
     const key = `course:${courseId}`;
-    await redis.set(key, JSON.stringify(courseData), "EX", ttlSeconds);   
+    await redis.set(key, JSON.stringify(courseData), "EX", ttlSeconds);
   }
 
-  static async getCachedSubscription(institutionId){
+  static async getCachedSubscription(institutionId) {
     const key = `subscription:${institutionId}`;
     return await redis.get(key);
   }
 
-  static async cacheSubscription(institutionId, subscriptionData, ttlSeconds = 300) {
+  static async cacheSubscription(
+    institutionId,
+    subscriptionData,
+    ttlSeconds = 300
+  ) {
     const key = `subscription:${institutionId}`;
-    await redis.set(key, JSON.stringify(subscriptionData), "EX", ttlSeconds);   
+    await redis.set(key, JSON.stringify(subscriptionData), "EX", ttlSeconds);
+  }
+
+  static async trackUniqueCourseViewOrImpression(primaryKey, courseId, institutionId, userId) {
+    try {
+      const key = `${primaryKey}:${courseId}:${institutionId}`;
+
+      await Promise.all([
+      redis.sadd(key, userId),
+      redis.expire(key, 24 * 60 * 60),
+    ]);
+
+    } catch (err) {
+      console.error("❌ Error in trackUniqueCourseView:", err);
+    }
   }
 
   static async cachePaymentContext(orderId, context, ttlSeconds = 900) {

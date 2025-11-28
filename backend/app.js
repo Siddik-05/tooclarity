@@ -14,6 +14,7 @@ const subscriptionRoutes = require("./routes/subscription.routes");
 const enquiriesRoutes = require("./routes/enquiries.routes");
 const profileRoutes = require("./routes/profile.routes");
 const notificationRoutes = require("./routes/notification.routes");
+const analyticsRoutes = require("./routes/analytics.routes");
 const {
   publicRouter: paymentPublicRoutes,
   protectedRouter: paymentProtectedRoutes,
@@ -127,6 +128,12 @@ app.use(
   requireStudent,
   courseRoutes
 );
+
+app.use(
+  "api/v1/analytics/",
+  requireInstituteAdmin,
+  analyticsRoutes
+)
 
 app.use("/api/v1/student/wishlist",
   requireStudent,

@@ -139,3 +139,11 @@
     @apply bg-background text-foreground;
   }
 }
+
+@font-face {
+  font-family: "Roobert TRIAL";
+  src: url("/fonts/RoobertTrial/RoobertTrial-Regular.woff") format("truetype");
+  font-weight: 750;
+  font-style: normal;
+}
+

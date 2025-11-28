@@ -4,7 +4,7 @@ import React, { useMemo, useState } from "react";
 import { _Card, _CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useInstitution } from "@/lib/hooks/dashboard-hooks";
-import { programsAPI } from "@/lib/api";
+import { programsAPI, paymentAPI } from "@/lib/api";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { withAuth } from "@/lib/auth-context";
 import { Input } from "@/components/ui/input";
@@ -13,16 +13,63 @@ import AppSelect from "@/components/ui/AppSelect";
 import L2DialogBox from "@/components/auth/L2DialogBox";
 import { getProgramStatus, formatDate } from "@/lib/utility";
 import { useRouter } from "next/navigation";
+import AnalyticsTable from "@/components/dashboard/AnalyticsTable";
+import { loadRazorpayScript } from "@/lib/razorpay";
+import { useUserStore } from "@/lib/user-store";
+
+type InactiveCourseRow = {
+  id: string;
+  sno: string;
+  name: string;
+  status: "Live" | "Draft" | "Paused" | "Expired" | "Inactive";
+  startDate: string;
+  endDate: string;
+  price: number;
+};
+
+const statusDisplayMap: Record<string, InactiveCourseRow["status"]> = {
+  active: "Live",
+  upcoming: "Paused",
+  expired: "Expired",
+  invalid: "Draft",
+  inactive: "Draft",
+};
+
+const statusBadgeClasses: Record<InactiveCourseRow["status"], string> = {
+  Live: "bg-green-100 text-green-700",
+  Draft: "bg-gray-100 text-gray-700",
+  Paused: "bg-yellow-100 text-yellow-700",
+  Expired: "bg-red-100 text-red-700",
+  Inactive: "bg-gray-200 text-gray-700 border border-gray-300",
+};
+
+const parsePrice = (value: unknown): number => {
+  if (typeof value === "number" && !Number.isNaN(value)) return value;
+  if (typeof value === "string") {
+    const numeric = Number(value.replace(/[^0-9.]/g, ""));
+    return Number.isNaN(numeric) ? 0 : numeric;
+  }
+  return 0;
+};
+
+const DEFAULT_COURSE_PRICE = 1188;
 
 function ProgramsPage() {
   const { data: institution } = useInstitution();
   const queryClient = useQueryClient();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'details'|'add'>('details');
+  const [activeTab, setActiveTab] = useState<'details'|'add'|'inactive'>('details');
   const [search, setSearch] = useState("");
   const [branchFilter, setBranchFilter] = useState<string>("");
   const [addInlineMode, setAddInlineMode] = useState<'none'|'course'|'branch'>('none');
   const [visibleCount, setVisibleCount] = useState<number>(10);
+  const [selectedInactive, setSelectedInactive] = useState<Record<string, boolean>>({});
+  const [isPaying, setIsPaying] = useState(false);
+  const [, setPaymentProcessing] = useState<{ paymentId?: string | null; orderId?: string | null } | null>(null);
+  const [, setPaymentVerified] = useState<{ transactionId?: string | null; paymentId?: string | null; orderId?: string | null } | null>(null);
+  const [, setPaymentFailed] = useState<{ paymentId?: string | null; orderId?: string | null } | null>(null);
+  const selectedPlan = "yearly" as const;
+  const appliedCoupon: string | null = null;
   // Add/Branch forms are delegated to L2DialogBox for reuse across the app
 
   const { data: programs } = useQuery({
@@ -55,6 +102,15 @@ function ProgramsPage() {
     },
     staleTime: 60*1000,
   });
+  const paidInvoices = React.useMemo(() => {
+    if (!Array.isArray(invoices)) return [];
+    // Show all paid transactions (active, expired, but not pending)
+    // All records returned from API already have razorpayPaymentId, so they're all paid
+    return invoices.filter((inv) => {
+      const status = String(inv?.status || '').toLowerCase();
+      return status === 'active' || status === 'expired';
+    });
+  }, [invoices]);
 
   const onL2Success = () => {
     queryClient.invalidateQueries({ queryKey: ['programs-page-list-institution-admin'] });
@@ -97,6 +153,197 @@ function ProgramsPage() {
   });
   const visiblePrograms = filteredPrograms.slice(0, visibleCount);
 
+  const inactiveCourses = useMemo<InactiveCourseRow[]>(() => {
+    const list = (Array.isArray(programs) ? programs : [])
+      .map((p: Record<string, unknown>, idx: number) => {
+        const statusInfo = getProgramStatus(String(p?.startDate || ''), String(p?.endDate || ''));
+        const id = String(p?._id ?? `inactive-${idx}`);
+        const rawStatus = String(p?.status || "").toLowerCase();
+        const isBackendInactive = rawStatus === "inactive";
+        const displayStatus = isBackendInactive ? "Inactive" : (statusDisplayMap[statusInfo.status] ?? "Draft");
+        return {
+          id,
+          isInactive: isBackendInactive || statusInfo.status !== 'active',
+          preferBackendStatus: isBackendInactive,
+          name: String(p?.programName || p?.CourseName || 'Untitled course'),
+          status: displayStatus,
+          startDate: formatDate(String(p?.startDate || '')),
+          endDate: formatDate(String(p?.endDate || '')),
+          price: parsePrice((p as Record<string, unknown>)?.priceOfCourse),
+        };
+      })
+      .filter((item) => item.preferBackendStatus);
+
+    return list.map((item, idx) => {
+      const { preferBackendStatus, isInactive, ...rest } = item;
+      return {
+        ...rest,
+        sno: String(idx + 1).padStart(2, '0'),
+      };
+    });
+  }, [programs]);
+
+  const inactiveSelectedCount = inactiveCourses.reduce((count, course) => count + (selectedInactive[course.id] ? 1 : 0), 0);
+  const totalInactivePrice = inactiveSelectedCount * DEFAULT_COURSE_PRICE;
+  const allInactiveSelected = inactiveCourses.length > 0 && inactiveCourses.every((course) => selectedInactive[course.id]);
+
+  const formatCurrency = (value: number) => `₹ ${value.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
+
+  const handleSelectAllInactive = (checked: boolean) => {
+    if (!checked) {
+      setSelectedInactive({});
+      return;
+    }
+    const next: Record<string, boolean> = {};
+    inactiveCourses.forEach((course) => {
+      next[course.id] = true;
+    });
+    setSelectedInactive(next);
+  };
+
+  const handleToggleInactiveCourse = (courseId: string, checked: boolean) => {
+    setSelectedInactive((prev) => {
+      const next = { ...prev };
+      if (checked) {
+        next[courseId] = true;
+      } else {
+        delete next[courseId];
+      }
+      return next;
+    });
+  };
+
+  const handleProceedToPay = async () => {
+    if (!inactiveSelectedCount || isPaying) return;
+
+    const selectedCourseIds = inactiveCourses
+      .filter((course) => !!selectedInactive[course.id])
+      .map((course) => course.id)
+      .filter((courseId) => !!courseId && !courseId.startsWith("inactive-"));
+
+    if (!selectedCourseIds.length) return;
+
+    try {
+      setIsPaying(true);
+
+      const res = await paymentAPI.initiatePayment({
+        amount: totalInactivePrice,
+        planType: selectedPlan,
+        couponCode: appliedCoupon ?? undefined,
+        courseIds: selectedCourseIds,
+      });
+
+      if (!res.success || !res.data) {
+        console.error("Payment init failed:", res.message);
+        setIsPaying(false);
+        return;
+      }
+
+      const ok = await loadRazorpayScript();
+      if (!ok) {
+        console.error("Razorpay SDK failed to load.");
+        setIsPaying(false);
+        return;
+      }
+
+      const { key, amount, orderId } = res.data as { key: string; amount: number; orderId: string };
+      const options: Record<string, unknown> = {
+        key,
+        amount,
+        currency: "INR",
+        name: "Too Clarity",
+        description: "Yearly Listing Fee",
+        order_id: orderId,
+        notes: {
+          plan: selectedPlan,
+          coupon: appliedCoupon ?? "",
+        },
+        theme: { color: "#0222D7" },
+        modal: {
+          ondismiss: () => {
+            setIsPaying(false);
+          },
+        },
+        handler: async (response: { razorpay_payment_id?: string; razorpay_order_id?: string; razorpay_signature?: string }) => {
+          setPaymentProcessing({
+            paymentId: response.razorpay_payment_id ?? null,
+            orderId: response.razorpay_order_id ?? null,
+          });
+          try {
+            const verifyRes = await paymentAPI.verifyPayment({
+              orderId: response.razorpay_order_id || "",
+              paymentId: response.razorpay_payment_id || "",
+              signature: response.razorpay_signature || "",
+              planType: selectedPlan,
+              coupon: appliedCoupon ?? null,
+              amount: totalInactivePrice,
+            });
+
+            const status = (verifyRes.message || "").toLowerCase();
+
+            if (status === "active") {
+              const txnId = (verifyRes.data as { transactionId?: string | null })?.transactionId || null;
+              try {
+                useUserStore.getState().setPaymentStatus(true);
+              } catch (storeError) {
+                console.warn("[Payment] Failed to set isPaymentDone in store:", storeError);
+              }
+
+              // Courses are automatically activated by the polling endpoint when status becomes "active"
+              // No separate activation call needed
+
+              programsAPI.invalidateCache(institution?._id ? String(institution._id) : undefined);
+              await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ['programs-page-list-institution-admin', institution?._id] }),
+                queryClient.invalidateQueries({ queryKey: ['subscription-history', institution?._id] }),
+              ]);
+              setSelectedInactive({});
+
+              setPaymentVerified({
+                transactionId: txnId,
+                paymentId: response.razorpay_payment_id ?? null,
+                orderId: response.razorpay_order_id ?? null,
+              });
+              setPaymentProcessing(null);
+            } else if (status === "expired" || status === "verification_timeout" || !verifyRes.success) {
+              console.error("Payment verification failed:", verifyRes.message);
+              setPaymentFailed({
+                paymentId: response.razorpay_payment_id ?? null,
+                orderId: response.razorpay_order_id ?? null,
+              });
+              setPaymentProcessing(null);
+            } else {
+              setPaymentProcessing({
+                paymentId: response.razorpay_payment_id ?? null,
+                orderId: response.razorpay_order_id ?? null,
+              });
+            }
+          } catch (err) {
+            console.error("Payment verification error:", err);
+            setPaymentFailed({
+              paymentId: response.razorpay_payment_id ?? null,
+              orderId: response.razorpay_order_id ?? null,
+            });
+            setPaymentProcessing(null);
+          } finally {
+            setIsPaying(false);
+          }
+        },
+        prefill: {},
+      };
+
+      const rzp = new (window as unknown as { Razorpay: new (opts: Record<string, unknown>) => { open: () => void } }).Razorpay(options);
+      rzp.open();
+    } catch (error) {
+      console.error("Payment init error:", error);
+      setIsPaying(false);
+    }
+  };
+
+  React.useEffect(() => {
+    setSelectedInactive({});
+  }, [programs]);
+
   return (
     <div className="p-2 mt-5 space-y-6">
       {/* _Card 1: Your Listed Programs */}
@@ -110,6 +357,7 @@ function ProgramsPage() {
           <div className="flex items-center gap-6 border-b border-gray-200 dark:border-gray-800 mb-4 text-gray-900 dark:text-gray-100">
             <button onClick={()=>setActiveTab('details')} className={`py-2 px-1 ${activeTab==='details'?'border-b-2 border-blue-600 font-medium':'text-gray-500'}`}>Program Details</button>
             <button onClick={()=>setActiveTab('add')} className={`py-2 px-1 ${activeTab==='add'?'border-b-2 border-blue-600 font-medium':'text-gray-500'}`}>Add Program</button>
+            <button onClick={()=>setActiveTab('inactive')} className={`py-2 px-1 ${activeTab==='inactive'?'border-b-2 border-blue-600 font-medium':'text-gray-500'}`}>Inactive Courses</button>
           </div>
 
           {/* Utilities row: search + filter */}
@@ -131,6 +379,100 @@ function ProgramsPage() {
               />
             </div>
           </div>
+          )}
+
+          {/* Inactive Courses tab */}
+          {activeTab==='inactive' && (
+            <div className="mt-6">
+              <AnalyticsTable<InactiveCourseRow>
+                variant="embedded"
+                hideDefaultCta
+                rows={inactiveCourses}
+                titleOverride="Inactive Courses"
+                renderTable={(rows) => (
+                  <div className="space-y-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <label className="inline-flex items-center gap-2 text-sm font-medium text-gray-900 dark:text-gray-100">
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 accent-blue-600"
+                          checked={rows.length > 0 && allInactiveSelected}
+                          onChange={(e) => handleSelectAllInactive(e.target.checked)}
+                        />
+                        Select all
+                      </label>
+                      <span className="text-sm text-gray-500">{rows.length} inactive course{rows.length === 1 ? '' : 's'}</span>
+                    </div>
+                    {rows.length === 0 ? (
+                      <div className="py-8 text-center text-gray-500 bg-white dark:bg-gray-900 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700">
+                        No inactive courses available right now.
+                      </div>
+                    ) : (
+                      <div className="w-full overflow-x-auto">
+                        <table className="min-w-full text-left">
+                          <thead className="text-gray-600 text-sm">
+                            <tr>
+                              <th className="py-3 pr-4 w-24">Select</th>
+                              <th className="py-3 pr-4 w-20">S.No</th>
+                              <th className="py-3 pr-4">Course Name</th>
+                              <th className="py-3 pr-4">Status</th>
+                              <th className="py-3 pr-4">Start Date</th>
+                              <th className="py-3 pr-4">End Date</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {rows.map((course) => (
+                              <tr key={course.id} className="border-t border-gray-100 dark:border-gray-800">
+                                <td className="py-4 pr-2">
+                                  <input
+                                    type="checkbox"
+                                    className="h-4 w-4 accent-blue-600"
+                                    checked={!!selectedInactive[course.id]}
+                                    onChange={(e) => handleToggleInactiveCourse(course.id, e.target.checked)}
+                                  />
+                                </td>
+                                <td className="py-4 pr-4">{course.sno}</td>
+                                <td className="py-4 pr-4">
+                                  <div className="font-medium text-gray-900 dark:text-gray-100">{course.name}</div>
+                                </td>
+                                <td className="py-4 pr-4">
+                                  <span className={`inline-flex items-center text-xs rounded-full px-3 py-1 ${statusBadgeClasses[course.status]}`}>
+                                    ● {course.status}
+                                  </span>
+                                </td>
+                                <td className="py-4 pr-4 text-sm">{course.startDate}</td>
+                                <td className="py-4 pr-4 text-sm">{course.endDate}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                )}
+                footerContent={
+                  <div className="mt-6 border-t border-gray-200 dark:border-gray-800 pt-4">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="text-sm text-gray-500">
+                          {inactiveSelectedCount} course{inactiveSelectedCount === 1 ? '' : 's'} × ₹{DEFAULT_COURSE_PRICE.toLocaleString('en-IN')} per course
+                        </p>
+                        <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+                          {formatCurrency(totalInactivePrice)}
+                        </p>
+                      </div>
+                      <Button
+                        disabled={!inactiveSelectedCount || isPaying}
+                        onClick={handleProceedToPay}
+                        className="px-6 py-3 rounded-2xl bg-blue-600 text-white dark:text-gray-100 hover:bg-blue-700 dark:hover:bg-blue-800 disabled:opacity-60"
+                      >
+                        {isPaying ? "Processing..." : "Proceed To Pay"}
+                      </Button>
+                    </div>
+                  </div>
+                }
+              />
+            </div>
           )}
 
           {/* Program Details table */}
@@ -259,10 +601,10 @@ function ProgramsPage() {
             <div className="col-span-1 text-right">Action</div>
           </div>
           <div className="space-y-3">
-            {Array.isArray(invoices) && invoices.length === 0 ? (
+            {Array.isArray(paidInvoices) && paidInvoices.length === 0 ? (
               <div className="py-6 text-center text-gray-500">No transactions found yet.</div>
             ) : (
-            (invoices||[]).map((inv: Record<string, unknown>, idx: number)=> (
+            (paidInvoices||[]).map((inv: Record<string, unknown>, idx: number)=> (
               <div key={String(inv._id) || idx} className="grid grid-cols-12 items-center bg-white dark:bg-gray-900 rounded-xl px-3 py-4 shadow-[0_1px_0_rgba(0,0,0,0.03)]">
                 <div className="col-span-2 sm:col-span-1 text-gray-700">{String(idx+1).padStart(2,'0')}</div>
                 <div className="col-span-4 sm:col-span-3 font-medium text-gray-900">{String(inv.invoiceId)}</div>

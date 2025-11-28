@@ -139,7 +139,9 @@ export const InstituteCoursePage: React.FC<InstituteCoursePageProps> = ({
     "requestCall" | "bookDemo" | null
   >(null);
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [emailAddress, setEmailAddress] = useState("");
   const { user } = useUserStore();
+  console.log("Console Message Ashok User Name ",user?.name);
 
   const handleRequestCall = async () => {
     if (user?.isPhoneVerified) {
@@ -177,25 +179,40 @@ export const InstituteCoursePage: React.FC<InstituteCoursePageProps> = ({
   };
 
   const handleCallbackSubmit = async (data: CallbackFormData) => {
-  try {
-    setPhoneNumber(data.phoneNumber);
-    console.log("Sending OTP to phone:", data.phoneNumber);
+    try {
+      console.log("Console Message Ashok ",user?.name);
+      const { phoneNumber: phoneInput, email, userName } = data;
+      const trimmedPhone = (phoneInput || "").trim();
+      const trimmedEmail = (email || "").trim();
+      const trimmedUserName = (userName || "").trim();
 
-    const response = await authAPI.verifyContactNumber(data.phoneNumber);
+      if (!trimmedPhone && !trimmedEmail) {
+        toast.error("Please provide a phone number or email to verify.");
+        return;
+      }
 
-    if (response?.success) {
-      setIsCallbackDialogOpen(false);
-      setIsOtpDialogOpen(true);
-      toast.success("OTP sent successfully!");
-    } else {
-      toast.error(response?.message || "Failed to send OTP");
+      setPhoneNumber(trimmedPhone);
+      setEmailAddress(trimmedEmail);
+
+      const response = await authAPI.verifyContactNumberAndEmail({
+        contactNumber: trimmedPhone || undefined,
+        email: trimmedEmail || undefined,
+        userName: trimmedUserName || user?.name || undefined,
+      });
+
+      if (response?.success) {
+        setIsCallbackDialogOpen(false);
+        setIsOtpDialogOpen(true);
+        const targetLabel = trimmedPhone ? "phone number" : "email";
+        toast.success(`OTP sent to ${targetLabel} successfully!`);
+      } else {
+        toast.error(response?.message || "Failed to send OTP");
+      }
+    } catch (error) {
+      toast.error("Something went wrong while sending OTP");
+      console.error(error);
     }
-
-  } catch (error) {
-    toast.error( "Something went wrong while sending OTP");
-    console.error(error);
-  }
-};
+  };
 
   const handleDemoSubmit = async (data: BookDemoFormData) => {
     try {
@@ -247,6 +264,7 @@ export const InstituteCoursePage: React.FC<InstituteCoursePageProps> = ({
         open={isCallbackDialogOpen}
         onOpenChange={setIsCallbackDialogOpen}
         onSubmit={handleCallbackSubmit}
+        collectEmailAndPhone
       />
       <BookDemoDialog
         open={isBookDemoDialogOpen}
@@ -256,7 +274,8 @@ export const InstituteCoursePage: React.FC<InstituteCoursePageProps> = ({
       <OtpDialogBox
         open={isOtpDialogOpen}
         setOpen={setIsOtpDialogOpen}
-        phoneNumber={phoneNumber}
+        phoneNumber={phoneNumber || undefined}
+        email={emailAddress || undefined}
         onVerificationSuccess={handleOtpVerificationSuccess}
         fromStudent={true}
       />

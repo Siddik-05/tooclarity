@@ -2,7 +2,7 @@ const { decodeToken } = require("./jwt.util");
 
 class CookieUtil {
   static defaultOptions = {
-    secure: process.env.NODE_ENV === "production",
+    secure: true,
     // secure: true,
     sameSite: "none",
     path: "/", // default root path

@@ -110,7 +110,7 @@ export default function HeroSection() {
                         alt="Graduate"
                         width={100}
                         height={100}
-                        className="w-full h-full object-contain object-bottom"
+                        className="w-full h-full object-contain"
                       />
                     </div>
                   </div>
@@ -391,7 +391,7 @@ export default function HeroSection() {
           <div className="flex justify-end mt-auto">
             <Image width={100}
                         height={100} src="/Graduate.jpg" alt="Graduate"
-              className="w-[90px] h-[65px] object-contain" />
+              className="w-[90px] h-[55px] object-contain" />
           </div>
         </div>
       </div>

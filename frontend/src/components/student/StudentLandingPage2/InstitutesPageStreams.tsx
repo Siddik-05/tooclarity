@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { _Card, _CardContent } from "@/components/ui/card";
 import { ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function StreamsSection() {
   const router = useRouter();
@@ -92,15 +93,7 @@ export default function StreamsSection() {
 
   return (
     <>
-      {/* Section Heading */}
-      {/* <div className="text-center md:mt-25 mt-20 mb-8 sm:mb-12 relative px-12 sm:px-6 lg:px-8">
-        <div className="text-4xl  sm:text-6xl md:text-8xl font-bold text-gray-200 absolute  left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none">
-          Explore Streams
-        </div>
-        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold relative z-10">
-          Explore Streams That Shape Your Future
-        </h2>
-      </div> */}
+      
       <div className="text-center w-full md:mt-25 mt-15  sm:mb-8 relative px-12 sm:px-6 lg:px-8">
   {/* BACK TITLE - Explore Streams */}
   <div
@@ -127,7 +120,7 @@ export default function StreamsSection() {
   </div>
 
   {/* MAIN TITLE */}
-  <h2 className="text-1xl text-[#000000] w-full whitespace-nowrap sm:text-3xl md:text-4xl font-bold relative z-10">
+  <h2 className="text-1xl text-[#000000] w-full whitespace-nowrap sm:text-3xl md:text-4xl font-bold relative z-10 transform translate-y-1/2">
     Explore Streams That Shape Your Future
   </h2>
 </div>
@@ -186,22 +179,63 @@ export default function StreamsSection() {
                       index % 2 === 0 ? "text-left" : "text-left"
                     }`}
                   >
-                    <_Card className="border-[#0222D7] border-[1.5px] rounded-2xl hover:shadow-lg transition-transform duration-300 hover:-translate-y-1">
-                      <_CardContent className="p-12">
-                        <h3 className="text-3xl font-bold mb-2 text-gray-900">
-                          {stream.title}
-                        </h3>
-                        <p className="text-[#000000] mb-3 text-[15px]">
-                          {stream.desc}
-                        </p>
-                        <button 
-                        onClick={()=>router.push("/student/signup")}
-                        className="text-blue-800 cursor-pointer font-semibold flex items-center justify-end md:justify-start hover:text-blue-700">
-                          Explore Now{" "}
-                          <ChevronRight className="w-4 h-4 ml-1" />
-                        </button>
-                      </_CardContent>
-                    </_Card>
+                 <_Card className="relative overflow-visible border-[#0222D7] border-[1.5px] rounded-2xl hover:shadow-lg transition-transform duration-300 hover:-translate-y-1">
+
+  {/* Side Accent Line */}
+  <div
+    className={`
+      absolute top-[45px] -translate-y-1/2 
+      bg-[#0222D7]
+      w-[10px]
+      h-[30%]
+      
+      rounded-full
+      ${index % 2 === 0 ? "ml-[-10px] left-0" : "mr-[-10px] right-0"}
+    `}
+  ></div>
+
+  {/* SIDE IMAGE (new absolute positioning) */}
+  <div
+    className={`
+      absolute mt-[30%] -translate-y-1/2
+      ${index % 2 === 0 ? "-ml-" : "-right-0.5"}
+    `}
+  >
+    <Image
+      src={
+        index % 2 === 0
+          ? "/Images/missionViolet.svg"
+          : "/Images/missionVioletRight.svg"
+      }
+      alt={stream.title}
+      width={120}
+      height={120}
+      className="w-auto h-auto object-contain"
+
+    />
+  </div>
+
+  {/* Card Content */}
+  <_CardContent
+    className="p-12 flex items-start gap-8 flex-row"
+  >
+    <div className="flex flex-col ">
+      <h3 className="text-2xl font-bold mb-2 text-gray-900">
+        {stream.title}
+      </h3>
+
+      <p className="text-[#000000] flex-nowrap mb-3 text-[15px]">{stream.desc}</p>
+
+      <button
+        onClick={() => router.push("/student/signup")}
+        className="text-blue-800 font-semibold flex items-center hover:text-blue-700"
+      >
+        Explore Now <ChevronRight className="w-4 h-4 ml-1" />
+      </button>
+    </div>
+  </_CardContent>
+</_Card>
+
                   </div>
 
                   {/* Center Dots */}
@@ -228,7 +262,19 @@ export default function StreamsSection() {
                   </div>
 
                   <_Card className="flex-1 border border-blue-800 rounded-2xl shadow-sm hover:shadow-md transition-all">
+
+  {/* SIDE IMAGE (new absolute positioning) */}
+  <div
+    className="absolute mt-[20%] -translate-y-1/2 -right-1">
+    <Image
+      src="/Images/missionVioletRight.svg"
+      alt={stream.title}
+      width={20}
+      height={20}
+      className="w-[75%] h-[75%] object-contain"/>
+  </div>
                     <_CardContent className="p-4">
+
                       <h3 className="text-base font-bold mb-1 text-gray-900">
                         {stream.title}
                       </h3>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import { _Card, _CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -13,11 +13,19 @@ export interface CoursePerformanceRow {
   engagementRate: string; // e.g., '3.6%'
 }
 
-interface AnalyticsTableProps {
-  rows: CoursePerformanceRow[];
+type DisplayStatus = CoursePerformanceRow["status"];
+
+interface AnalyticsTableProps<T = CoursePerformanceRow> {
+  rows: T[];
   onAddCourse?: () => void;
   titleOverride?: string;
   nameHeaderOverride?: string;
+  renderTable?: (rows: T[]) => React.ReactNode;
+  footerContent?: ReactNode;
+  hideDefaultCta?: boolean;
+  variant?: "standalone" | "embedded";
+  className?: string;
+  contentClassName?: string;
 }
 
 const StatusPill: React.FC<{ status: CoursePerformanceRow["status"] }> = ({ status }) => {
@@ -36,11 +44,26 @@ const StatusPill: React.FC<{ status: CoursePerformanceRow["status"] }> = ({ stat
   );
 };
 
-const AnalyticsTable: React.FC<AnalyticsTableProps> = ({ rows, onAddCourse, titleOverride, nameHeaderOverride }) => {
-  return (
-    <_Card className="m-5 bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl">
-      <_CardContent className="p-3 sm:p-6 ">
-        <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">{titleOverride || "Course Performance"}</h3>
+const AnalyticsTable = <T,>({
+  rows,
+  onAddCourse,
+  titleOverride,
+  nameHeaderOverride,
+  renderTable,
+  footerContent,
+  hideDefaultCta,
+  variant = "standalone",
+  className = "",
+  contentClassName = "",
+}: AnalyticsTableProps<T>) => {
+  const defaultRows = rows as unknown as CoursePerformanceRow[];
+
+  const tableContent = (
+    <>
+      <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">{titleOverride || "Course Performance"}</h3>
+      {renderTable ? (
+        renderTable(rows)
+      ) : (
         <div className="w-full overflow-x-auto">
           <table className="min-w-[650px] w-full">
             <thead>
@@ -55,13 +78,13 @@ const AnalyticsTable: React.FC<AnalyticsTableProps> = ({ rows, onAddCourse, titl
               </tr>
             </thead>
             <tbody >
-              {rows.map((r, idx) => (
+              {defaultRows.map((r, idx) => (
                 <tr key={idx} className="bg-white dark:bg-gray-800 rounded-2xl shadow-[0_1px_0_0_#F0F0F0]/50 dark:shadow-none">
                   <td className="p-4 text-gray-900 dark:text-gray-100">{r.sno}</td>
                   <td className="p-4">
                     <div className="text-gray-900 dark:text-gray-100 font-medium">{r.name}</div>
                   </td>
-                  <td className="p-4"><StatusPill status={r.status} /></td>
+                  <td className="p-4"><StatusPill status={r.status as DisplayStatus} /></td>
                   <td className="p-4 text-gray-900 dark:text-gray-100">{r.views.toLocaleString()}</td>
                   <td className="p-4 text-gray-900 dark:text-gray-100">{r.leads}</td>
                   <td className="p-4 text-gray-900 dark:text-gray-100">{r.engagementRate}</td>
@@ -75,12 +98,33 @@ const AnalyticsTable: React.FC<AnalyticsTableProps> = ({ rows, onAddCourse, titl
             </tbody>
           </table>
         </div>
+      )}
+      {!hideDefaultCta && (
         <div className="flex justify-center mt-6">
           <Button onClick={onAddCourse} variant="secondary" className="text-gray-600 border border-gray-200 rounded-full bg-white p-5 dark:bg-indigo-50 dark:hover:bg-indigo-100">
             <span className="text-lg mr-2">＋</span>
             Add Course
           </Button>
         </div>
+      )}
+      {footerContent}
+    </>
+  );
+
+  if (variant === "embedded") {
+    return (
+      <div className={className}>
+        <div className={contentClassName}>
+          {tableContent}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <_Card className={`m-5 bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl ${className}`}>
+      <_CardContent className={`p-3 sm:p-6 ${contentClassName}`}>
+        {tableContent}
       </_CardContent>
     </_Card>
   );

@@ -34,7 +34,7 @@ export const baseCourseSchema = Joi.object({
     "any.required": "Start date is required",
   }),
   endDate: Joi.string().required().messages({
-    "string.empty": "End date is required", 
+    "string.empty": "End date is required",
     "any.required": "End date is required",
   }),
   priceOfCourse: Joi.number()
@@ -56,14 +56,14 @@ export const baseCourseSchema = Joi.object({
   image: Joi.any().optional(),
   /*imageUrl: Joi.string().uri().required().messages({
     "string.empty": "Image is required", */
-    imageUrl: Joi.string().uri().allow("").optional().messages({
+  imageUrl: Joi.string().uri().allow("").optional().messages({
     "string.uri": "Must be a valid URL (e.g., https://...)",
   }),
   imagePreviewUrl: Joi.string().allow("").optional(), // ✅ only preview, not mandatory
   brochure: Joi.any().optional(),
   /*brochureUrl: Joi.string().uri().required().messages({
     "string.empty": "Brochure URL is required", */
-    brochureUrl: Joi.string().uri().allow("").optional().messages({
+  brochureUrl: Joi.string().uri().allow("").optional().messages({
     "string.uri": "Must be a valid URL (e.g., https://...)",
   }),
   brochurePreviewUrl: Joi.string().allow("").optional(),
@@ -312,6 +312,71 @@ export const UGPGSchema = Joi.object({
   createdBranch: createdBranchRule,
 });
 
+// ✅ Study Abroad Schema
+export const StudyAbroadSchema = Joi.object({
+  // Basic consultancy fields
+  consultancyName: nameRule.required().messages({
+    "string.empty": "Consultancy name is required",
+    "any.required": "Consultancy name is required",
+  }),
+
+  studentAdmissions: Joi.number()
+    .min(0)
+    .required()
+    .messages({
+      "number.base": "Student admissions must be a number",
+      "number.min": "Student admissions cannot be negative",
+      "any.required": "Student admissions count is required",
+    }),
+
+  countriesOffered: Joi.string()
+    .required()
+    .invalid("Select Country") // Prevent placeholder value
+    .messages({
+      "string.empty": "Please select a country",
+      "any.required": "Country selection is required",
+      "any.invalid": "Please select a valid country",
+    }),
+
+  academicOfferings: Joi.string()
+    .required()
+    .invalid("Select Academic type") // Prevent placeholder value
+    .messages({
+      "string.empty": "Please select an academic offering",
+      "any.required": "Academic offering is required",
+      "any.invalid": "Please select a valid academic type",
+    }),
+
+  // File uploads - optional as per user requirement
+  image: Joi.any().optional(),
+  imageUrl: Joi.string().uri().allow("").optional().messages({
+    "string.uri": "Must be a valid URL",
+  }),
+  imagePreviewUrl: Joi.string().allow("").optional(),
+
+  brochure: Joi.any().optional(),
+  brochureUrl: Joi.string().uri().allow("").optional().messages({
+    "string.uri": "Must be a valid URL",
+  }),
+  brochurePreviewUrl: Joi.string().allow("").optional(),
+
+  // Legal verification - optional
+  businessProof: Joi.any().optional(),
+  businessProofUrl: Joi.string().uri().allow("").optional().messages({
+    "string.uri": "Must be a valid URL",
+  }),
+  businessProofPreviewUrl: Joi.string().allow("").optional(),
+
+  panAadhaar: Joi.any().optional(),
+  panAadhaarUrl: Joi.string().uri().allow("").optional().messages({
+    "string.uri": "Must be a valid URL",
+  }),
+  panAadhaarPreviewUrl: Joi.string().allow("").optional(),
+
+  // Branch association
+  createdBranch: createdBranchRule,
+});
+
 // ✅ Branch Schema
 export const branchSchema = Joi.object({
   branchName: Joi.string()
@@ -351,5 +416,6 @@ export const L2Schemas: Record<string, Joi.ObjectSchema> = {
   studyHall: StudyHallSchema,
   tuition: TuitionCenterSchema,
   ugpg: UGPGSchema,
+  studyAbroad: StudyAbroadSchema,
   branch: branchSchema,
 };

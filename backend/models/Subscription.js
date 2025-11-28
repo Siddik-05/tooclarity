@@ -7,7 +7,6 @@ const subscriptionSchema = new mongoose.Schema(
       ref: "Institution",
       required: true,
       index: true,
-      unique: true, // Each institution has only one active subscription record.
     },
     planType: {
       type: String,

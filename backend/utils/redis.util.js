@@ -99,7 +99,7 @@ class RedisUtil {
 
   static async getSubscription(orderId) {
     const key = `subscription:${orderId}`;
-    await redis.get(key);
+    return await redis.get(key);
   }
 
   static async deleteSubscription(orderId) {
@@ -170,6 +170,30 @@ class RedisUtil {
   static async cacheSubscription(institutionId, subscriptionData, ttlSeconds = 300) {
     const key = `subscription:${institutionId}`;
     await redis.set(key, JSON.stringify(subscriptionData), "EX", ttlSeconds);   
+  }
+
+  static async cachePaymentContext(orderId, context, ttlSeconds = 900) {
+    if (!orderId) throw new Error("cachePaymentContext: orderId is required");
+    const key = `payment:${orderId}`;
+    await redis.set(key, JSON.stringify(context), "EX", ttlSeconds);
+  }
+
+  static async getPaymentContext(orderId) {
+    if (!orderId) return null;
+    const key = `payment:${orderId}`;
+    const raw = await redis.get(key);
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+
+  static async deletePaymentContext(orderId) {
+    if (!orderId) return;
+    const key = `payment:${orderId}`;
+    await redis.del(key);
   }
 }
 
